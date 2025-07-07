@@ -168,7 +168,6 @@ class ImageGenerationTool:
                     "file_size_bytes": len(image_bytes),
                     "dimensions": size_str,
                     "format": output_format_str.upper(),
-                    "local_path": str(image_path),
                 }
             }
             
@@ -182,4 +181,4 @@ class ImageGenerationTool:
             
         except Exception as e:
             logger.error(f"Error generating image for task {task_id}: {e}")
-            raise RuntimeError(f"Image generation failed: {str(e)}") from e
+            raise RuntimeError(f"Image generation failed: {str(e)}")

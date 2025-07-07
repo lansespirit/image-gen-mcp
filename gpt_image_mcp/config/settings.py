@@ -1,8 +1,8 @@
 """Configuration settings for the GPT Image MCP Server."""
 
-import os
+from pathlib import Path
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,8 +12,15 @@ class OpenAISettings(BaseModel):
     api_key: str = Field(..., description="OpenAI API key")
     organization: str | None = Field(None, description="OpenAI organization ID")
     base_url: str = Field("https://api.openai.com/v1", description="OpenAI API base URL")
-    timeout: float = Field(60.0, description="Request timeout in seconds")
+    timeout: float = Field(300.0, description="Request timeout in seconds")
     max_retries: int = Field(3, description="Maximum number of retries")
+
+    @field_validator('base_url')
+    @classmethod
+    def validate_base_url(cls, v):
+        if not v.startswith(('http://', 'https://')):
+            raise ValueError('Base URL must start with http:// or https://')
+        return v.rstrip('/')
 
 
 class ImageSettings(BaseModel):
@@ -21,7 +28,7 @@ class ImageSettings(BaseModel):
     
     default_model: str = Field("gpt-image-1", description="Default image model")
     default_quality: Literal["auto", "high", "medium", "low"] = Field("auto", description="Default quality")
-    default_size: Literal["1024x1024", "1536x1024", "1024x1536"] = Field("1536x1024", description="Default size")
+    default_size: Literal["1024x1024", "1536x1024", "1024x1536", "auto"] = Field("auto", description="Default size")
     default_style: Literal["vivid", "natural"] = Field("vivid", description="Default style")
     default_moderation: Literal["auto", "low"] = Field("auto", description="Default moderation level")
     default_output_format: Literal["png", "jpeg", "webp"] = Field("png", description="Default output format")
@@ -38,6 +45,27 @@ class StorageSettings(BaseModel):
     create_subdirectories: bool = Field(True, description="Create date-based subdirectories")
     file_permissions: str = Field("644", description="File permissions in octal")
 
+    @field_validator('base_path')
+    @classmethod
+    def validate_base_path(cls, v):
+        path = Path(v)
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            raise ValueError(f"Cannot create or access storage path: {e}")
+        return str(path.resolve())
+    
+    @field_validator('file_permissions')
+    @classmethod
+    def validate_permissions(cls, v):
+        try:
+            int(v, 8)
+            if len(v) != 3:
+                raise ValueError("File permissions must be 3 digits")
+        except ValueError:
+            raise ValueError("File permissions must be valid octal notation (e.g., '644')")
+        return v
+
 
 class CacheSettings(BaseModel):
     """Caching configuration."""
@@ -47,6 +75,12 @@ class CacheSettings(BaseModel):
     backend: Literal["memory", "redis"] = Field("memory", description="Cache backend")
     max_size_mb: int = Field(500, description="Maximum cache size in MB")
     redis_url: str | None = Field(None, description="Redis connection URL")
+
+    @model_validator(mode='after')
+    def validate_redis_config(self):
+        if self.backend == "redis" and not self.redis_url:
+            raise ValueError("Redis URL is required when using redis backend")
+        return self
 
 
 class ServerSettings(BaseModel):
@@ -61,51 +95,20 @@ class ServerSettings(BaseModel):
 
 
 class Settings(BaseSettings):
-    """Main configuration settings."""
+    """Main configuration settings with automatic environment variable handling."""
     
     model_config = SettingsConfigDict(
         env_file=".env",
         env_nested_delimiter="__",
+        env_file_encoding='utf-8',
         case_sensitive=False,
         extra="ignore",
+        env_file_alternates=[".env.local", ".env.production"],
     )
     
-    openai: OpenAISettings = Field(default_factory=OpenAISettings)
-    images: ImageSettings = Field(default_factory=ImageSettings)
-    storage: StorageSettings = Field(default_factory=StorageSettings)
-    cache: CacheSettings = Field(default_factory=CacheSettings)
-    server: ServerSettings = Field(default_factory=ServerSettings)
-    
-    @classmethod
-    def from_env(cls) -> "Settings":
-        """Create settings from environment variables."""
-        return cls(
-            openai=OpenAISettings(
-                api_key=os.getenv("OPENAI_API_KEY", ""),
-                organization=os.getenv("OPENAI_ORGANIZATION"),
-                base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-            ),
-            images=ImageSettings(
-                default_quality=os.getenv("DEFAULT_QUALITY", "auto"),
-                default_size=os.getenv("DEFAULT_SIZE", "1536x1024"),
-                default_style=os.getenv("DEFAULT_STYLE", "vivid"),
-                default_moderation=os.getenv("MODERATION_LEVEL", "auto"),
-            ),
-            storage=StorageSettings(
-                base_path=os.getenv("STORAGE_BASE_PATH", "./storage"),
-                retention_days=int(os.getenv("STORAGE_RETENTION_DAYS", "30")),
-                max_size_gb=float(os.getenv("STORAGE_MAX_SIZE_GB", "10.0")),
-                cleanup_interval_hours=int(os.getenv("STORAGE_CLEANUP_INTERVAL_HOURS", "24")),
-            ),
-            cache=CacheSettings(
-                enabled=os.getenv("CACHE_ENABLED", "true").lower() == "true",
-                ttl_hours=int(os.getenv("CACHE_TTL_HOURS", "24")),
-                backend=os.getenv("CACHE_BACKEND", "memory"),
-                max_size_mb=int(os.getenv("MAX_CACHE_SIZE_MB", "500")),
-            ),
-            server=ServerSettings(
-                port=int(os.getenv("SERVER_PORT", "3001")),
-                log_level=os.getenv("LOG_LEVEL", "INFO"),
-                rate_limit_rpm=int(os.getenv("RATE_LIMIT_RPM", "50")),
-            ),
-        )
+    # Nested settings with proper defaults
+    openai: OpenAISettings = Field(default_factory=lambda: OpenAISettings)
+    images: ImageSettings = Field(default_factory=lambda: ImageSettings)
+    storage: StorageSettings = Field(default_factory=lambda: StorageSettings)
+    cache: CacheSettings = Field(default_factory=lambda: CacheSettings)
+    server: ServerSettings = Field(default_factory=lambda: ServerSettings)

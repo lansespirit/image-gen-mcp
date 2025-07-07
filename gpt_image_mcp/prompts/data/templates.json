@@ -1,0 +1,749 @@
+{
+  "templates": {
+    "creative_image": {
+      "id": "creative_image",
+      "name": "creative-image-prompt",
+      "title": "Creative Image Generation",
+      "description": "Enhanced template for creative image generation with expert art direction. Combines subject, artistic style, mood, and color palette to create vivid, artistic images.",
+      "category": "creative",
+      "version": "1.1",
+      "template": "Create a {style} artwork depicting {subject} in {setting}, {mood} atmosphere with {lighting} lighting, {color_palette} color palette, {composition} composition, ultra-detailed, high quality",
+      "parameters": {
+        "subject": {
+          "type": "string",
+          "required": true,
+          "description": "Main subject of the image - be specific and detailed",
+          "examples": ["a mystical forest with ancient glowing trees", "futuristic cityscape with flying vehicles", "majestic dragon perched on mountain peak"]
+        },
+        "style": {
+          "type": "string",
+          "required": false,
+          "default": "digital art",
+          "description": "Artistic style or medium",
+          "examples": ["digital art", "fantasy oil painting", "cyberpunk 3D render", "impressionist watercolor"],
+          "suggestions": ["digital art", "oil painting", "watercolor", "3D render", "concept art", "matte painting"]
+        },
+        "setting": {
+          "type": "string",
+          "required": false,
+          "default": "dramatic environment",
+          "description": "Environmental setting or location",
+          "examples": ["mystical realm at twilight", "neon-lit urban district", "serene mountain valley", "underwater palace"]
+        },
+        "mood": {
+          "type": "string",
+          "required": false,
+          "default": "vibrant",
+          "description": "Desired mood or emotional tone",
+          "examples": ["enchanted and mysterious", "dynamic and energetic", "serene and peaceful", "dramatic and intense"]
+        },
+        "lighting": {
+          "type": "string",
+          "required": false,
+          "default": "dramatic",
+          "description": "Lighting style",
+          "examples": ["golden hour sunlight", "ethereal moonlight", "dramatic rim lighting", "soft ambient glow"]
+        },
+        "color_palette": {
+          "type": "string",
+          "required": false,
+          "default": "rich and vibrant",
+          "description": "Color scheme preference",
+          "examples": ["emerald and gold accents", "neon blues and purples", "warm sunset tones", "monochromatic silver"]
+        },
+        "composition": {
+          "type": "string",
+          "required": false,
+          "default": "dynamic",
+          "description": "Compositional approach",
+          "examples": ["rule of thirds", "centered focal point", "diagonal dynamic", "symmetrical balance"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1024x1024",
+        "quality": "high",
+        "style": "vivid"
+      },
+      "examples": [
+        {
+          "input": {
+            "subject": "a mystical forest with ancient glowing trees",
+            "style": "fantasy digital art",
+            "setting": "enchanted realm at twilight",
+            "mood": "magical and mysterious",
+            "lighting": "ethereal bioluminescent glow",
+            "color_palette": "deep emerald and gold accents",
+            "composition": "depth with leading lines"
+          },
+          "output": "Create a fantasy digital art artwork depicting a mystical forest with ancient glowing trees in enchanted realm at twilight, magical and mysterious atmosphere with ethereal bioluminescent glow lighting, deep emerald and gold accents color palette, depth with leading lines composition, ultra-detailed, high quality"
+        }
+      ]
+    },
+    "product_photography": {
+      "id": "product_photography",
+      "name": "product-image-prompt",
+      "title": "Product Photography",
+      "description": "Professional product photography prompt with commercial specifications. Optimized for e-commerce, catalogs, and marketing materials with controlled lighting and backgrounds.",
+      "category": "commercial",
+      "version": "1.1",
+      "template": "Professional product photography of {product}, {lighting} lighting on {background} background, {angle} angle, {detail_focus}, sharp focus, commercial quality, high detail",
+      "parameters": {
+        "product": {
+          "type": "string",
+          "required": true,
+          "description": "Detailed product description with key features",
+          "examples": ["luxury chronograph watch with leather strap", "latest smartphone with edge display", "crystal perfume bottle with gold accents"]
+        },
+        "background": {
+          "type": "string",
+          "required": false,
+          "default": "clean white studio",
+          "description": "Background setting with texture details",
+          "examples": ["pure white seamless backdrop", "elegant black velvet surface", "soft gradient gray to white", "minimalist marble surface"],
+          "suggestions": ["white studio", "black studio", "gradient backdrop", "textured surface", "lifestyle setting"]
+        },
+        "lighting": {
+          "type": "string",
+          "required": false,
+          "default": "soft diffused",
+          "description": "Professional lighting setup",
+          "examples": ["soft box diffused lighting", "dramatic spotlight with rim light", "natural window light", "three-point studio lighting"]
+        },
+        "angle": {
+          "type": "string",
+          "required": false,
+          "default": "hero shot",
+          "description": "Camera angle and perspective",
+          "examples": ["front-facing hero shot", "45-degree three-quarter view", "overhead flat lay", "dynamic low angle"]
+        },
+        "detail_focus": {
+          "type": "string",
+          "required": false,
+          "default": "product features highlighted",
+          "description": "Specific details to emphasize",
+          "examples": ["texture and material quality", "brand logo prominent", "functional elements visible", "reflections and highlights"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "high",
+        "style": "natural"
+      },
+      "examples": [
+        {
+          "input": {
+            "product": "luxury chronograph watch with leather strap",
+            "background": "elegant black velvet surface",
+            "lighting": "dramatic spotlight with rim light",
+            "angle": "45-degree three-quarter view",
+            "detail_focus": "metallic finish and dial details"
+          },
+          "output": "Professional product photography of luxury chronograph watch with leather strap, dramatic spotlight with rim light lighting on elegant black velvet surface background, 45-degree three-quarter view angle, metallic finish and dial details, sharp focus, commercial quality, high detail"
+        }
+      ]
+    },
+    "social_media": {
+      "id": "social_media",
+      "name": "social-media-post-prompt",
+      "title": "Social Media Graphics",
+      "description": "Platform-optimized social media graphics with engagement best practices. Tailored for specific platforms with brand consistency and call-to-action elements.",
+      "category": "social",
+      "version": "1.1",
+      "template": "Create a {platform} post graphic for {content_type} about {topic}, {brand_style} visual style with {visual_elements}, {color_scheme} colors, {layout} layout, eye-catching and shareable{cta_part}",
+      "parameters": {
+        "platform": {
+          "type": "string",
+          "required": true,
+          "description": "Target social media platform",
+          "examples": ["Instagram", "Facebook", "Twitter", "LinkedIn"],
+          "enum": ["Instagram", "Facebook", "Twitter", "LinkedIn", "Pinterest", "TikTok"]
+        },
+        "content_type": {
+          "type": "string",
+          "required": true,
+          "description": "Type of social media post",
+          "examples": ["product announcement", "inspirational quote", "event promotion", "brand showcase"]
+        },
+        "topic": {
+          "type": "string",
+          "required": true,
+          "description": "Main topic or subject of the post",
+          "examples": ["new product launch", "company milestone", "industry insights", "customer success story"]
+        },
+        "brand_style": {
+          "type": "string",
+          "required": false,
+          "default": "modern and clean",
+          "description": "Brand visual aesthetic",
+          "examples": ["modern minimalist", "bold and vibrant", "elegant luxury", "playful and colorful"]
+        },
+        "visual_elements": {
+          "type": "string",
+          "required": false,
+          "default": "geometric shapes and icons",
+          "description": "Specific visual elements to include",
+          "examples": ["abstract geometric patterns", "photo collage elements", "hand-drawn illustrations", "3D rendered objects"]
+        },
+        "color_scheme": {
+          "type": "string",
+          "required": false,
+          "default": "brand-aligned",
+          "description": "Color palette for the design",
+          "examples": ["vibrant gradient", "monochrome with accent", "pastel palette", "high contrast bold"]
+        },
+        "layout": {
+          "type": "string",
+          "required": false,
+          "default": "balanced",
+          "description": "Compositional layout",
+          "examples": ["centered with border", "asymmetric modern", "grid-based", "diagonal dynamic"]
+        },
+        "call_to_action": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Include call-to-action element"
+        }
+      },
+      "metadata": {
+        "recommended_size": "1024x1024",
+        "quality": "medium",
+        "style": "vivid"
+      },
+      "conditional_parts": {
+        "cta_part": {
+          "condition": "call_to_action === true",
+          "value": ", prominent call-to-action button"
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "platform": "Instagram",
+            "content_type": "product announcement",
+            "topic": "new eco-friendly water bottle launch",
+            "brand_style": "modern minimalist",
+            "visual_elements": "3D product render with nature elements",
+            "color_scheme": "green and blue gradient"
+          },
+          "output": "Create a Instagram post graphic for product announcement about new eco-friendly water bottle launch, modern minimalist visual style with 3D product render with nature elements, green and blue gradient colors, balanced layout, eye-catching and shareable"
+        }
+      ]
+    },
+    "artistic_style": {
+      "id": "artistic_style",
+      "name": "artistic-style-prompt",
+      "title": "Artistic Style Generation",
+      "description": "Generate images in specific artistic styles and periods. Emulates famous artists, art movements, and traditional mediums with historical accuracy.",
+      "category": "artistic",
+      "version": "1.1",
+      "template": "Masterpiece {medium} of {subject} in {setting}, painted in the style of {artist_style} from the {era} period, {atmosphere} atmosphere, {technique} technique, museum quality",
+      "parameters": {
+        "subject": {
+          "type": "string",
+          "required": true,
+          "description": "Main subject with specific details",
+          "examples": ["serene mountain landscape with lake", "bustling city street scene", "contemplative portrait of elderly person"]
+        },
+        "setting": {
+          "type": "string",
+          "required": false,
+          "default": "appropriate to style",
+          "description": "Environmental context",
+          "examples": ["French countryside", "Victorian London street", "abstract dreamscape", "classical garden"]
+        },
+        "artist_style": {
+          "type": "string",
+          "required": false,
+          "default": "impressionist",
+          "description": "Specific artist or art movement style",
+          "examples": ["Monet's impressionism", "Van Gogh's expressive brushwork", "Picasso's cubism", "Klimt's art nouveau"],
+          "suggestions": ["impressionist", "expressionist", "cubist", "surrealist", "abstract", "renaissance", "baroque"]
+        },
+        "medium": {
+          "type": "string",
+          "required": false,
+          "default": "oil painting",
+          "description": "Traditional art medium",
+          "examples": ["thick oil paint on canvas", "delicate watercolor", "bold acrylic", "fine charcoal drawing"]
+        },
+        "era": {
+          "type": "string",
+          "required": false,
+          "default": "appropriate to style",
+          "description": "Historical artistic period",
+          "examples": ["19th century", "Belle Époque", "Renaissance", "contemporary"]
+        },
+        "atmosphere": {
+          "type": "string",
+          "required": false,
+          "default": "evocative",
+          "description": "Emotional atmosphere",
+          "examples": ["dreamlike and ethereal", "vibrant and energetic", "melancholic and moody", "serene and peaceful"]
+        },
+        "technique": {
+          "type": "string",
+          "required": false,
+          "default": "masterful brushwork",
+          "description": "Specific artistic technique",
+          "examples": ["visible brushstrokes", "smooth blending", "pointillist dots", "geometric abstraction"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1024x1024",
+        "quality": "high",
+        "style": "vivid"
+      }
+    },
+    "og_image": {
+      "id": "og_image",
+      "name": "og-image-prompt",
+      "title": "Open Graph Images",
+      "description": "Social media preview images optimized for sharing. Creates engaging thumbnails for websites, blog posts, and social media links with proper dimensions and text placement.",
+      "category": "web",
+      "version": "1.1",
+      "template": "Social media preview image (16:10 aspect ratio) featuring '{title}' as bold headline{brand_part}, {background_style} background with {visual_elements}, {text_layout} typography, {color_scheme} color scheme, professional and eye-catching",
+      "parameters": {
+        "title": {
+          "type": "string",
+          "required": true,
+          "description": "Main title text to display prominently",
+          "maxLength": 60
+        },
+        "brand_name": {
+          "type": "string",
+          "required": false,
+          "description": "Website or brand name"
+        },
+        "background_style": {
+          "type": "string",
+          "required": false,
+          "default": "modern gradient",
+          "description": "Background visual style",
+          "examples": ["smooth gradient blend", "geometric pattern", "abstract shapes", "blurred photography"]
+        },
+        "visual_elements": {
+          "type": "string",
+          "required": false,
+          "default": "subtle design accents",
+          "description": "Supporting visual elements",
+          "examples": ["floating 3D shapes", "line art illustrations", "particle effects", "tech circuit patterns"]
+        },
+        "text_layout": {
+          "type": "string",
+          "required": false,
+          "default": "centered",
+          "description": "Typography arrangement",
+          "enum": ["centered bold", "left-aligned modern", "right-aligned elegant", "split layout"]
+        },
+        "color_scheme": {
+          "type": "string",
+          "required": false,
+          "default": "professional",
+          "description": "Color palette theme",
+          "examples": ["corporate blue gradient", "vibrant startup colors", "elegant monochrome", "warm inviting tones"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "medium",
+        "style": "natural"
+      },
+      "conditional_parts": {
+        "brand_part": {
+          "condition": "brand_name != null",
+          "value": " with {brand_name} branding"
+        }
+      }
+    },
+    "blog_header": {
+      "id": "blog_header",
+      "name": "blog-header-prompt",
+      "title": "Blog Header Images",
+      "description": "Header images for blog posts and articles. Creates visually appealing banners that complement written content with optional space for text overlays.",
+      "category": "web",
+      "version": "1.1",
+      "template": "Blog header image about {topic}, {style} visual style featuring {visual_metaphor}, {mood} mood with {lighting} lighting, {color_palette} colors{text_space_part}, wide aspect ratio",
+      "parameters": {
+        "topic": {
+          "type": "string",
+          "required": true,
+          "description": "Blog post topic or main theme",
+          "examples": ["artificial intelligence trends", "sustainable living tips", "remote work productivity", "financial planning"]
+        },
+        "style": {
+          "type": "string",
+          "required": false,
+          "default": "modern editorial",
+          "description": "Visual design style",
+          "examples": ["modern tech aesthetic", "minimalist clean", "vibrant lifestyle", "professional corporate"]
+        },
+        "visual_metaphor": {
+          "type": "string",
+          "required": false,
+          "default": "abstract concept visualization",
+          "description": "Visual representation of the topic",
+          "examples": ["interconnected network nodes", "growth plant metaphor", "journey path visualization", "puzzle pieces coming together"]
+        },
+        "mood": {
+          "type": "string",
+          "required": false,
+          "default": "engaging",
+          "description": "Emotional tone",
+          "examples": ["inspiring and uplifting", "professional and trustworthy", "innovative and forward-thinking", "warm and approachable"]
+        },
+        "lighting": {
+          "type": "string",
+          "required": false,
+          "default": "bright and optimistic",
+          "description": "Lighting atmosphere",
+          "examples": ["soft morning light", "dramatic spotlight", "even studio lighting", "warm golden hour"]
+        },
+        "color_palette": {
+          "type": "string",
+          "required": false,
+          "default": "complementary",
+          "description": "Color scheme",
+          "examples": ["blue and orange accent", "monochrome with pop color", "pastel gradient", "earth tones"]
+        },
+        "include_text_space": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Reserve space for text overlay"
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "medium",
+        "style": "natural"
+      },
+      "conditional_parts": {
+        "text_space_part": {
+          "condition": "include_text_space === true",
+          "value": ", strategic negative space for text overlay"
+        }
+      }
+    },
+    "hero_banner": {
+      "id": "hero_banner",
+      "name": "hero-banner-prompt",
+      "title": "Website Hero Banners",
+      "description": "Hero section banners for websites. Creates impactful landing page visuals that communicate brand value propositions and industry-specific messaging.",
+      "category": "web",
+      "version": "1.1",
+      "template": "Website hero banner for {website_type}{industry_part} showcasing {main_theme}, {visual_style} design featuring {hero_elements}, {atmosphere} atmosphere{message_part}, ultra-wide format, high impact",
+      "parameters": {
+        "website_type": {
+          "type": "string",
+          "required": true,
+          "description": "Type of website",
+          "examples": ["SaaS platform", "creative portfolio", "e-commerce store", "corporate website"]
+        },
+        "main_theme": {
+          "type": "string",
+          "required": true,
+          "description": "Core theme or main subject of the hero banner",
+          "examples": ["cloud infrastructure solutions", "creative design services", "sustainable fashion products", "financial management tools"]
+        },
+        "industry": {
+          "type": "string",
+          "required": false,
+          "description": "Industry or market sector",
+          "examples": ["fintech", "healthcare", "education", "creative agency"]
+        },
+        "message": {
+          "type": "string",
+          "required": false,
+          "description": "Key value proposition or message"
+        },
+        "visual_style": {
+          "type": "string",
+          "required": false,
+          "default": "modern professional",
+          "description": "Design aesthetic approach",
+          "examples": ["cutting-edge tech", "elegant minimalist", "bold creative", "trustworthy corporate"]
+        },
+        "hero_elements": {
+          "type": "string",
+          "required": false,
+          "default": "abstract technology patterns",
+          "description": "Main visual elements",
+          "examples": ["flowing data streams", "geometric architecture", "nature-inspired organic shapes", "human-centric imagery"]
+        },
+        "atmosphere": {
+          "type": "string",
+          "required": false,
+          "default": "innovative and dynamic",
+          "description": "Overall feeling and mood",
+          "examples": ["futuristic and innovative", "warm and welcoming", "powerful and confident", "calm and trustworthy"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "high",
+        "style": "natural"
+      },
+      "conditional_parts": {
+        "industry_part": {
+          "condition": "industry != null",
+          "value": " in {industry} sector"
+        },
+        "message_part": {
+          "condition": "message != null",
+          "value": " conveying '{message}'"
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "website_type": "SaaS platform",
+            "main_theme": "AI-powered analytics dashboard",
+            "industry": "fintech",
+            "visual_style": "cutting-edge tech",
+            "hero_elements": "flowing data streams",
+            "atmosphere": "futuristic and innovative",
+            "message": "Transform your data into insights"
+          },
+          "output": "Website hero banner for SaaS platform in fintech sector showcasing AI-powered analytics dashboard, cutting-edge tech design featuring flowing data streams, futuristic and innovative atmosphere conveying 'Transform your data into insights', ultra-wide format, high impact"
+        }
+      ]
+    },
+    "thumbnail": {
+      "id": "thumbnail",
+      "name": "thumbnail-prompt",
+      "title": "Video Thumbnails",
+      "description": "Engaging thumbnails for video content. Optimized for high click-through rates with bold visual elements and emotional appeal across different content types.",
+      "category": "media",
+      "version": "1.1",
+      "template": "YouTube thumbnail for {content_type} video about {topic}, {style} design with {focal_element}, {emotion} expression, bold {color_scheme} colors, high contrast, clickable appeal",
+      "parameters": {
+        "content_type": {
+          "type": "string",
+          "required": true,
+          "description": "Type of video content",
+          "examples": ["tutorial", "vlog", "product review", "documentary"]
+        },
+        "topic": {
+          "type": "string",
+          "required": true,
+          "description": "Specific video topic or subject"
+        },
+        "style": {
+          "type": "string",
+          "required": false,
+          "default": "bold and dynamic",
+          "description": "Visual design style",
+          "examples": ["high-energy bold", "cinematic dramatic", "clean minimal", "fun animated"]
+        },
+        "focal_element": {
+          "type": "string",
+          "required": false,
+          "default": "eye-catching central subject",
+          "description": "Main visual focus",
+          "examples": ["expressive face reaction", "before/after comparison", "product hero shot", "dramatic scene moment"]
+        },
+        "emotion": {
+          "type": "string",
+          "required": false,
+          "default": "exciting",
+          "description": "Emotional hook",
+          "examples": ["shocked surprise", "genuine excitement", "curious intrigue", "confident expertise"]
+        },
+        "color_scheme": {
+          "type": "string",
+          "required": false,
+          "default": "vibrant high-contrast",
+          "description": "Color approach for visibility",
+          "examples": ["red and yellow pop", "blue and orange contrast", "neon on dark", "bright on white"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "high",
+        "style": "vivid"
+      }
+    },
+    "infographic": {
+      "id": "infographic",
+      "name": "infographic-prompt",
+      "title": "Infographic Images",
+      "description": "Information graphics and data visualizations. Creates educational and engaging visuals that effectively communicate complex data and concepts in accessible formats.",
+      "category": "educational",
+      "version": "1.1",
+      "template": "Professional infographic showing {data_type} about {topic}, {visual_approach} design style with {chart_types}, {layout} layout, {color_scheme} color scheme, clear data hierarchy, readable typography",
+      "parameters": {
+        "data_type": {
+          "type": "string",
+          "required": true,
+          "description": "Type of data or information",
+          "examples": ["statistical data comparison", "step-by-step process", "timeline progression", "relationship mapping"]
+        },
+        "topic": {
+          "type": "string",
+          "required": true,
+          "description": "Subject matter of the infographic"
+        },
+        "visual_approach": {
+          "type": "string",
+          "required": false,
+          "default": "modern clean",
+          "description": "Design style approach",
+          "examples": ["minimalist data-focused", "illustrated storytelling", "corporate professional", "playful educational"]
+        },
+        "chart_types": {
+          "type": "string",
+          "required": false,
+          "default": "mixed visualization elements",
+          "description": "Types of data visualizations",
+          "examples": ["bar charts and pie graphs", "flowcharts and arrows", "icons and percentages", "maps and diagrams"]
+        },
+        "layout": {
+          "type": "string",
+          "required": false,
+          "default": "vertical flow",
+          "description": "Information organization",
+          "enum": ["vertical scroll", "horizontal sections", "central hub", "grid blocks"]
+        },
+        "color_scheme": {
+          "type": "string",
+          "required": false,
+          "default": "professional palette",
+          "description": "Color coding approach",
+          "examples": ["blue gradient scale", "rainbow categorical", "monochrome with accent", "brand colors"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1024x1536",
+        "quality": "high",
+        "style": "natural"
+      }
+    },
+    "email_header": {
+      "id": "email_header",
+      "name": "email-header-prompt",
+      "title": "Email Newsletter Headers",
+      "description": "Header images for email newsletters. Designs branded email headers that enhance newsletter engagement with seasonal themes and consistent visual identity.",
+      "category": "marketing",
+      "version": "1.1",
+      "template": "Email newsletter header for {newsletter_type} about {main_topic}{brand_part}, {visual_style} design with {header_elements}{theme_part}{season_part}, professional and inviting, email-optimized",
+      "parameters": {
+        "newsletter_type": {
+          "type": "string",
+          "required": true,
+          "description": "Type of newsletter content",
+          "examples": ["weekly tech digest", "marketing insights", "product updates", "company newsletter"]
+        },
+        "main_topic": {
+          "type": "string",
+          "required": true,
+          "description": "Main topic or focus of this newsletter edition",
+          "examples": ["AI trends in 2024", "quarterly product updates", "holiday gift guide", "team achievements"]
+        },
+        "brand_name": {
+          "type": "string",
+          "required": false,
+          "description": "Company or brand name"
+        },
+        "theme": {
+          "type": "string",
+          "required": false,
+          "description": "Newsletter theme or campaign"
+        },
+        "season": {
+          "type": "string",
+          "required": false,
+          "description": "Seasonal context",
+          "examples": ["spring refresh", "summer vibes", "autumn warmth", "winter holidays"]
+        },
+        "visual_style": {
+          "type": "string",
+          "required": false,
+          "default": "clean and modern",
+          "description": "Design aesthetic",
+          "examples": ["minimalist elegant", "colorful energetic", "corporate professional", "friendly approachable"]
+        },
+        "header_elements": {
+          "type": "string",
+          "required": false,
+          "default": "brand elements and patterns",
+          "description": "Visual components",
+          "examples": ["logo and tagline", "icon illustrations", "photo collage", "abstract patterns"]
+        }
+      },
+      "metadata": {
+        "recommended_size": "1536x1024",
+        "quality": "medium",
+        "style": "natural"
+      },
+      "conditional_parts": {
+        "brand_part": {
+          "condition": "brand_name != null",
+          "value": " for {brand_name}"
+        },
+        "theme_part": {
+          "condition": "theme != null",
+          "value": " featuring {theme} theme"
+        },
+        "season_part": {
+          "condition": "season != null",
+          "value": " with {season} seasonal elements"
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "newsletter_type": "weekly tech digest",
+            "main_topic": "AI breakthroughs in healthcare",
+            "brand_name": "TechInsights",
+            "visual_style": "modern professional",
+            "header_elements": "tech circuit patterns"
+          },
+          "output": "Email newsletter header for weekly tech digest about AI breakthroughs in healthcare for TechInsights, modern professional design with tech circuit patterns, professional and inviting, email-optimized"
+        }
+      ]
+    }
+  },
+  "categories": {
+    "creative": {
+      "name": "Creative",
+      "description": "Templates for creative and artistic image generation",
+      "icon": "🎨"
+    },
+    "commercial": {
+      "name": "Commercial",
+      "description": "Templates for commercial and product photography",
+      "icon": "📦"
+    },
+    "social": {
+      "name": "Social Media",
+      "description": "Templates optimized for social media platforms",
+      "icon": "📱"
+    },
+    "artistic": {
+      "name": "Artistic",
+      "description": "Templates for specific artistic styles and periods",
+      "icon": "🖼️"
+    },
+    "web": {
+      "name": "Web Graphics",
+      "description": "Templates for web-based images and graphics",
+      "icon": "🌐"
+    },
+    "media": {
+      "name": "Media",
+      "description": "Templates for video and media content",
+      "icon": "🎬"
+    },
+    "educational": {
+      "name": "Educational",
+      "description": "Templates for educational and informational content",
+      "icon": "📊"
+    },
+    "marketing": {
+      "name": "Marketing",
+      "description": "Templates for marketing and promotional materials",
+      "icon": "📧"
+    }
+  }
+}

@@ -62,17 +62,78 @@ An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1
 
 #### Development Mode
 ```bash
-# Run with MCP Inspector for testing
-uv run mcp dev gpt_image_mcp/server.py
+# HTTP transport for web development and testing
+./run.sh dev
 
-# Or run directly
-python scripts/dev.py server
+# STDIO transport for Claude Desktop integration  
+./run.sh stdio
+
+# Production deployment
+./run.sh prod
+```
+
+#### Manual Execution
+```bash
+# STDIO transport (default) - for Claude Desktop
+python -m gpt_image_mcp.server
+
+# HTTP transport - for web deployment
+python -m gpt_image_mcp.server --transport streamable-http --port 3001
+
+# SSE transport - for real-time applications
+python -m gpt_image_mcp.server --transport sse --port 8080
+
+# With custom configuration
+python -m gpt_image_mcp.server --config /path/to/.env --log-level DEBUG
+
+# Enable CORS for web development
+python -m gpt_image_mcp.server --transport streamable-http --cors
+```
+
+#### Command Line Options
+```bash
+python -m gpt_image_mcp.server --help
+
+GPT Image MCP Server - Generate and edit images using OpenAI's gpt-image-1 model
+
+options:
+  --config PATH         Path to configuration file (.env format)
+  --log-level LEVEL     Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  --transport TYPE      Transport method (stdio, sse, streamable-http)
+  --port PORT          Port for HTTP transports (default: 3001)
+  --host HOST          Host address for HTTP transports (default: 127.0.0.1)
+  --cors               Enable CORS for web deployments
+  --version            Show version information
+  --help               Show help message
+
+Examples:
+  # Claude Desktop integration
+  python -m gpt_image_mcp.server
+
+  # Web deployment  
+  python -m gpt_image_mcp.server --transport streamable-http --port 3001
+
+  # Development with debug logging
+  python -m gpt_image_mcp.server --log-level DEBUG --cors
 ```
 
 #### Claude Desktop Integration
 ```bash
 # Install for Claude Desktop
 uv run mcp install gpt_image_mcp/server.py --name "GPT Image Server"
+
+# Or add to Claude Desktop configuration manually
+{
+  "mcpServers": {
+    "gpt-image": {
+      "command": "python",
+      "args": ["-m", "gpt_image_mcp.server"],
+      "env": {
+        "OPENAI_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
 ```
 
 ## Usage Examples

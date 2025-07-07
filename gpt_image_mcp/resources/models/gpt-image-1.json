@@ -1,0 +1,55 @@
+{
+  "model_id": "gpt-image-1",
+  "name": "GPT-Image-1",
+  "version": "1.0",
+  "capabilities": [
+    "Text-to-Image Generation: High-quality image generation from text descriptions",
+    "Image Editing: Edit existing images with text instructions",
+    "Multiple Formats: PNG, JPEG, WebP output formats",
+    "Background Control: transparent, opaque, auto",
+    "Compression: 0-100% for JPEG/WebP formats"
+  ],
+  "pricing": {
+    "text_input": "$5 per 1M tokens",
+    "image_input": "$10 per 1M tokens",
+    "image_output": "$40 per 1M tokens (~1750 tokens per image)"
+  },
+  "rate_limits": {
+    "default": "50 requests per minute",
+    "configurable": "Per organization settings",
+    "automatic_retry": "Built-in backoff logic"
+  },
+  "size_options": [
+    "1024x1024",
+    "1536x1024 (landscape)",
+    "1024x1536 (portrait)"
+  ],
+  "quality_levels": [
+    "auto",
+    "high",
+    "medium",
+    "low"
+  ],
+  "formats": [
+    "PNG",
+    "JPEG",
+    "WebP"
+  ],
+  "features": {
+    "background_control": "transparent, white, black, auto",
+    "compression": "0-100% for JPEG/WebP",
+    "style_control": "vivid, natural",
+    "moderation": "auto, low content filtering"
+  },
+  "best_practices": [
+    "Use descriptive, detailed prompts for better results",
+    "Consider quality vs cost tradeoffs",
+    "Leverage caching for repeated requests",
+    "Use appropriate output formats for use case",
+    "Save image IDs from tool responses to access images later via resources"
+  ],
+  "examples": [
+    "generate_image(prompt='A serene mountain landscape at sunset', quality='high', size='landscape')",
+    "edit_image(image_data='data:image/png;base64,...', prompt='Add a rainbow to the sky')"
+  ]
+}

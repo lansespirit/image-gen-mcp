@@ -65,7 +65,8 @@ class OpenAIClientManager:
         
         try:
             logger.info(f"Generating image with prompt: {prompt[:100]}...")
-            logger.debug(f"Request parameters: {request_params}")
+            logger.debug(f"Request parameters: {request_params}"
+                         f"API KEY: {self.client.api_key}")
             
             response = await self.client.images.generate(**request_params)
             
@@ -135,7 +136,7 @@ class OpenAIClientManager:
         try:
             logger.info(f"Editing image with prompt: {prompt[:100]}...")
             logger.debug(f"Request parameters: {list(request_params.keys())}")
-            
+            logger.debug(f"API KEY: {self.client.api_key}")
             response = await self.client.images.edit(**request_params)
             
             logger.info(f"Successfully edited image, generated {len(response.data)} result(s)")

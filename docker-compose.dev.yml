@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # Main application - Development version
+  gpt-image-mcp-dev:
+    build: .
+    container_name: gpt-image-mcp-dev
+    restart: unless-stopped
+    ports:
+      - "3001:3001"  # Expose directly for development
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_BASE_PATH=/app/storage
+      - CACHE_ENABLED=true
+      - CACHE_BACKEND=redis
+      - LOG_LEVEL=DEBUG
+      - SERVER_PORT=3001
+    volumes:
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - .:/app  # Mount source code for development
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    # Development: Use streamable-http with CORS for web testing
+    command: ["python", "-m", "gpt_image_mcp.server", "--transport", "streamable-http", "--port", "3001", "--host", "0.0.0.0", "--cors", "--log-level", "DEBUG"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://localhost:3001').getcode() == 200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Alternative: stdio version for Claude Desktop testing
+  gpt-image-mcp-stdio:
+    build: .
+    container_name: gpt-image-mcp-stdio
+    restart: "no"  # Don't restart automatically for stdio
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_BASE_PATH=/app/storage
+      - CACHE_ENABLED=true
+      - CACHE_BACKEND=redis
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+      - .:/app
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    # STDIO transport for Claude Desktop
+    command: ["python", "-m", "gpt_image_mcp.server", "--transport", "stdio", "--log-level", "DEBUG"]
+    profiles:
+      - stdio  # Only start with: docker-compose --profile stdio up
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: gpt-image-mcp-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"  # Expose for development tools
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development tools
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    profiles:
+      - tools
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

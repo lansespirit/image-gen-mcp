@@ -39,10 +39,9 @@ OUTPUT_FORMAT_DESCRIPTIONS = {
 }
 
 BACKGROUND_TYPE_DESCRIPTIONS = {
-    "auto": "Automatic background selection",
+    "auto": "Automatic background selection (default)",
     "transparent": "Transparent background (PNG/WebP only)",
-    "white": "Solid white background",
-    "black": "Solid black background"
+    "opaque": "Opaque background (solid color)"
 }
 
 
@@ -81,27 +80,12 @@ class ImageSize(str, Enum):
     SQUARE = "1024x1024"
     LANDSCAPE = "1536x1024"
     PORTRAIT = "1024x1536"
+    AUTO = "auto"
     
     @property
     def description(self) -> str:
         """Get human-readable description of this size."""
         return IMAGE_SIZE_DESCRIPTIONS.get(self.value, self.value)
-    
-    @property
-    def width(self) -> int:
-        """Get width in pixels."""
-        return int(self.value.split('x')[0])
-    
-    @property
-    def height(self) -> int:
-        """Get height in pixels."""
-        return int(self.value.split('x')[1])
-    
-    @property
-    def aspect_ratio(self) -> float:
-        """Get aspect ratio as width/height."""
-        return self.width / self.height
-
 
 class ImageStyle(str, Enum):
     """
@@ -173,17 +157,15 @@ class BackgroundType(str, Enum):
     """
     Background options for image generation.
     
-    Controls the background treatment:
-    - AUTO: Let the model decide based on the prompt
-    - TRANSPARENT: Transparent background (PNG/WebP only)
-    - WHITE: Solid white background
-    - BLACK: Solid black background
+    Controls the background treatment for gpt-image-1:
+    - AUTO: Let the model decide based on the prompt (default)
+    - TRANSPARENT: Transparent background 
+    - OPAQUE: Opaque background (solid color)
     """
     
     AUTO = "auto"
     TRANSPARENT = "transparent"
-    WHITE = "white"
-    BLACK = "black"
+    OPAQUE = "opaque"
     
     @property
     def description(self) -> str:

@@ -151,7 +151,7 @@ def get_common_aliases(enum_class: Type) -> dict[str, str]:
             'none': 'transparent',
             'clear': 'transparent',
             'remove': 'transparent',
-            'solid': 'white',
+            'solid': 'opaque',
         })
     
     return aliases
@@ -164,7 +164,7 @@ def validate_image_quality(value: Any) -> ImageQuality:
 
 def validate_image_size(value: Any) -> ImageSize:
     """Validate and normalize image size parameter."""
-    return normalize_enum_value(value, ImageSize, ImageSize.LANDSCAPE)
+    return normalize_enum_value(value, ImageSize, ImageSize.AUTO)
 
 
 def validate_image_style(value: Any) -> ImageStyle:

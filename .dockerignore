@@ -1,0 +1,96 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Environment files (keep only .env.example)
+.env
+*.env
+!.env.example
+
+# Documentation
+*.md
+docs/
+README.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Runtime data
+storage/images/
+storage/cache/
+storage/logs/
+*.pid
+*.seed
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Monitoring data (will be created in container)
+monitoring/data/
+prometheus_data/
+grafana_data/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Docker-related files that shouldn't be in the image
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Deployment scripts
+deploy/
+scripts/
+*.sh
+
+# Local development files
+test_*.py
+conftest.py
+tests/
