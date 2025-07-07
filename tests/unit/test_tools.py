@@ -174,14 +174,14 @@ class TestImageGenerationTool:
         
         mock_openai_client.images.generate = AsyncMock(return_value=mock_response)
         
-        # Generate with white background
+        # Generate with opaque background
         result = await generation_tool.generate(
             prompt="background test",
-            background=BackgroundType.WHITE
+            background=BackgroundType.OPAQUE
         )
         
         metadata = result["metadata"]
-        assert metadata["background"] == "white"
+        assert metadata["background"] == "opaque"
     
     @pytest.mark.asyncio
     async def test_generate_image_error_handling(self, generation_tool, mock_openai_client):

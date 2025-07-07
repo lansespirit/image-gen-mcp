@@ -3,6 +3,7 @@
 import base64
 import logging
 import uuid
+from pathlib import Path
 from typing import Any, Dict
 
 from ..config.settings import Settings
@@ -37,15 +38,37 @@ class ImageGenerationTool:
         self.cache_manager = cache_manager
         self.settings = settings
     
+    def _get_transport_type(self) -> str:
+        """Detect the current transport type from environment or default to stdio."""
+        import sys
+        # Check if we're running with HTTP transport based on command line args
+        if hasattr(sys, 'argv'):
+            for i, arg in enumerate(sys.argv):
+                if arg == '--transport' and i + 1 < len(sys.argv):
+                    return sys.argv[i + 1]
+        # Default to stdio for Claude Desktop integration
+        return "stdio"
+    
     def _build_image_url(self, image_id: str, file_format: str = "png") -> str:
-        """Build image URL using base_host setting or server host."""
+        """Build image URL using base_host setting, server host, or file path based on transport."""
+        transport_type = self._get_transport_type()
+        
         if self.settings.images.base_host:
             # Use configured host base (e.g., nginx/CDN URL) with full path
             url_path = build_image_url_path(image_id, file_format)
             return f"{self.settings.images.base_host.rstrip('/')}/{url_path}"
-        else:
-            # Use MCP server host with simple endpoint
+        elif transport_type in ["streamable-http", "sse"]:
+            # Use MCP server host with HTTP endpoint for HTTP transports
             return f"http://{self.settings.server.host}:{self.settings.server.port}/images/{image_id}"
+        else:
+            # For stdio transport, return file path that Claude Desktop can access
+            from ..utils.path_utils import build_image_storage_path
+            image_path = build_image_storage_path(
+                Path(self.settings.storage.base_path), 
+                image_id, 
+                file_format
+            )
+            return f"file://{image_path.absolute()}"
     
     async def generate(
         self,

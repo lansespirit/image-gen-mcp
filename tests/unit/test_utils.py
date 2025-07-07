@@ -131,7 +131,7 @@ class TestSpecificValidators:
         """Test background type validation."""
         assert validate_background_type("auto") == BackgroundType.AUTO
         assert validate_background_type("transparent") == BackgroundType.TRANSPARENT
-        assert validate_background_type("white") == BackgroundType.WHITE
+        assert validate_background_type("opaque") == BackgroundType.OPAQUE
         assert validate_background_type("black") == BackgroundType.BLACK
         assert validate_background_type("AUTO") == BackgroundType.AUTO
         assert validate_background_type("invalid") == BackgroundType.AUTO  # Default fallback

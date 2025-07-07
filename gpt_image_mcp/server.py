@@ -489,7 +489,10 @@ async def generate_image(
     Returns a dictionary containing:
     - task_id: Unique identifier for this generation task
     - image_id: Unique identifier for the generated image
-    - image_url: HTTP URL to access the generated image
+    - image_url: Image access URL (format depends on transport and configuration):
+      * STDIO transport: file:// URL for local file access
+      * HTTP transport: http:// URL to MCP server endpoint
+      * With base_host: full CDN/nginx URL with date path structure
     - resource_uri: MCP resource URI for future access
     - metadata: Generation details and parameters
     """
@@ -562,7 +565,7 @@ async def edit_image(
     ),
     background: Optional[str] = Field(
         default="auto",
-        description="Background type: auto, transparent, white, or black"
+        description="Background type: auto, transparent, or opaque"
     ),
 ) -> dict[str, Any]:
     """
@@ -571,7 +574,10 @@ async def edit_image(
     Returns a dictionary containing:
     - task_id: Unique identifier for this editing task
     - image_id: Unique identifier for the edited image
-    - image_url: HTTP URL to access the edited image
+    - image_url: Image access URL (format depends on transport and configuration):
+      * STDIO transport: file:// URL for local file access
+      * HTTP transport: http:// URL to MCP server endpoint
+      * With base_host: full CDN/nginx URL with date path structure
     - resource_uri: MCP resource URI for future access
     - operation: "edit" to indicate this was an edit operation
     - metadata: Edit details and parameters

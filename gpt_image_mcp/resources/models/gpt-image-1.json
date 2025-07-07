@@ -36,7 +36,7 @@
     "WebP"
   ],
   "features": {
-    "background_control": "transparent, white, black, auto",
+    "background_control": "transparent, opaque, auto",
     "compression": "0-100% for JPEG/WebP",
     "style_control": "vivid, natural",
     "moderation": "auto, low content filtering"
