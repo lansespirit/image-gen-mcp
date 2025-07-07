@@ -5,10 +5,11 @@ import logging
 import uuid
 from typing import Any, Dict
 
-from ..config.settings import ImageSettings
+from ..config.settings import Settings
 from ..storage.manager import ImageStorageManager
 from ..utils.cache import CacheManager
 from ..utils.openai_client import OpenAIClientManager
+from ..utils.path_utils import build_image_url_path
 
 logger = logging.getLogger(__name__)
 
@@ -21,12 +22,22 @@ class ImageEditingTool:
         openai_client: OpenAIClientManager,
         storage_manager: ImageStorageManager,
         cache_manager: CacheManager,
-        settings: ImageSettings,
+        settings: Settings,
     ):
         self.openai_client = openai_client
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager
         self.settings = settings
+    
+    def _build_image_url(self, image_id: str, file_format: str = "png") -> str:
+        """Build image URL using base_host setting or server host."""
+        if self.settings.images.base_host:
+            # Use configured host base (e.g., nginx/CDN URL) with full path
+            url_path = build_image_url_path(image_id, file_format)
+            return f"{self.settings.images.base_host.rstrip('/')}/{url_path}"
+        else:
+            # Use MCP server host with simple endpoint
+            return f"http://{self.settings.server.host}:{self.settings.server.port}/images/{image_id}"
     
     async def edit(
         self,
@@ -42,10 +53,10 @@ class ImageEditingTool:
         """Edit an existing image with text instructions."""
         
         # Apply defaults from settings
-        quality = quality or self.settings.default_quality
-        size = size or self.settings.default_size
-        output_format = output_format or self.settings.default_output_format
-        compression = compression if compression is not None else self.settings.default_compression
+        quality = quality or self.settings.images.default_quality
+        size = size or self.settings.images.default_size
+        output_format = output_format or self.settings.images.default_output_format
+        compression = compression if compression is not None else self.settings.images.default_compression
         
         # Generate task ID for tracking
         task_id = str(uuid.uuid4())
@@ -60,7 +71,7 @@ class ImageEditingTool:
             "output_format": output_format,
             "compression": compression,
             "background": background,
-            "model": self.settings.default_model,
+            "model": self.settings.images.default_model,
         }
         
         cached_result = await self.cache_manager.get_image_edit(**cache_params)
@@ -80,7 +91,7 @@ class ImageEditingTool:
                 image_data=image_data,
                 prompt=prompt,
                 mask_data=mask_data,
-                model=self.settings.default_model,
+                model=self.settings.images.default_model,
                 quality=quality,
                 size=size,
                 output_format=output_format,
@@ -115,7 +126,7 @@ class ImageEditingTool:
                 "prompt": prompt,
                 "has_mask": mask_data is not None,
                 "parameters": {
-                    "model": self.settings.default_model,
+                    "model": self.settings.images.default_model,
                     "quality": quality,
                     "size": size,
                     "output_format": output_format,
@@ -139,15 +150,14 @@ class ImageEditingTool:
                 file_format=output_format
             )
             
-            # Create base64 data URL for immediate client use
-            mime_type = f"image/{output_format}"
-            data_url = f"data:{mime_type};base64,{edited_image_data.b64_json}"
+            # Build image URL instead of base64 data
+            image_url = self._build_image_url(image_id, output_format)
             
             # Prepare result
             result = {
                 "task_id": task_id,
                 "image_id": image_id,
-                "image_url": data_url,  # Complete data URL with image data
+                "image_url": image_url,  # URL instead of base64 data
                 "resource_uri": f"generated-images://{image_id}",
                 "operation": "edit",
                 "metadata": {
@@ -166,10 +176,8 @@ class ImageEditingTool:
                 }
             }
             
-            # Cache the result (without the large base64 data)
-            cache_result = result.copy()
-            cache_result["image_url"] = f"generated-images://{image_id}"  # Use resource URI for cache
-            await self.cache_manager.set_image_edit(cache_result, **cache_params)
+            # Cache the result with URL
+            await self.cache_manager.set_image_edit(result, **cache_params)
             
             logger.info(f"Successfully edited image {image_id} for task {task_id}")
             return result

@@ -33,6 +33,7 @@ class ImageSettings(BaseModel):
     default_moderation: Literal["auto", "low"] = Field("auto", description="Default moderation level")
     default_output_format: Literal["png", "jpeg", "webp"] = Field("png", description="Default output format")
     default_compression: int = Field(100, description="Default compression level (0-100)")
+    base_host: str | None = Field(None, description="Base URL for image hosting (for nginx/CDN), if None uses MCP server host")
 
 
 class StorageSettings(BaseModel):
@@ -107,8 +108,8 @@ class Settings(BaseSettings):
     )
     
     # Nested settings with proper defaults
-    openai: OpenAISettings = Field(default_factory=lambda: OpenAISettings)
-    images: ImageSettings = Field(default_factory=lambda: ImageSettings)
-    storage: StorageSettings = Field(default_factory=lambda: StorageSettings)
-    cache: CacheSettings = Field(default_factory=lambda: CacheSettings)
-    server: ServerSettings = Field(default_factory=lambda: ServerSettings)
+    openai: OpenAISettings = Field(default_factory=OpenAISettings)
+    images: ImageSettings = Field(default_factory=ImageSettings)
+    storage: StorageSettings = Field(default_factory=StorageSettings)
+    cache: CacheSettings = Field(default_factory=CacheSettings)
+    server: ServerSettings = Field(default_factory=ServerSettings)

@@ -38,6 +38,7 @@ from .utils.validators import (
     sanitize_prompt,
     validate_base64_image,
 )
+from .utils.path_utils import find_existing_image_path
 
 
 # Initialize logging
@@ -198,14 +199,14 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[ServerContext]:
         openai_client=openai_client,
         storage_manager=storage_manager,
         cache_manager=cache_manager,
-        settings=settings.images
+        settings=settings,
     )
     
     image_editing_tool = ImageEditingTool(
         openai_client=openai_client,
         storage_manager=storage_manager,
         cache_manager=cache_manager,
-        settings=settings.images
+        settings=settings,
     )
     
     resource_manager = ImageResourceManager(
@@ -270,6 +271,52 @@ mcp = FastMCP(
         "aiofiles",
     ],
 )
+
+# Add image serving route for HTTP transports
+@mcp.custom_route("/images/{image_id}", methods=["GET"])
+async def serve_image(request):
+    """Serve stored images via HTTP endpoint."""
+    from starlette.responses import FileResponse, Response
+    
+    image_id = request.path_params["image_id"]
+    
+    try:
+        # Access the global settings directly
+        if not settings:
+            return Response("Server not initialized", status_code=500)
+        
+        # Create storage manager instance to find the image
+        storage_path = Path(settings.storage.base_path)
+        image_path = find_existing_image_path(storage_path, image_id)
+        
+        if not image_path or not image_path.exists():
+            return Response("Image not found", status_code=404)
+        
+        # Determine MIME type from file extension
+        extension = image_path.suffix.lower()
+        mime_types = {
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.webp': 'image/webp',
+            '.gif': 'image/gif'
+        }
+        
+        media_type = mime_types.get(extension, 'application/octet-stream')
+        
+        # Return image with proper headers
+        return FileResponse(
+            image_path,
+            media_type=media_type,
+            headers={
+                "Cache-Control": "public, max-age=31536000",  # 1 year cache
+                "ETag": f'"{image_id}"'
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error serving image {image_id}: {e}")
+        return Response("Internal server error", status_code=500)
 
 # Default logging configuration - will be updated in main()
 logger = logging.getLogger(__name__)
@@ -442,7 +489,7 @@ async def generate_image(
     Returns a dictionary containing:
     - task_id: Unique identifier for this generation task
     - image_id: Unique identifier for the generated image
-    - image_url: Complete data URL with base64-encoded image
+    - image_url: HTTP URL to access the generated image
     - resource_uri: MCP resource URI for future access
     - metadata: Generation details and parameters
     """
@@ -524,7 +571,7 @@ async def edit_image(
     Returns a dictionary containing:
     - task_id: Unique identifier for this editing task
     - image_id: Unique identifier for the edited image
-    - image_url: Complete data URL with base64-encoded image
+    - image_url: HTTP URL to access the edited image
     - resource_uri: MCP resource URI for future access
     - operation: "edit" to indicate this was an edit operation
     - metadata: Edit details and parameters
@@ -563,7 +610,7 @@ async def edit_image(
     "generated-images://{image_id}",
     name="get_generated_image",
     title="Generated Image Access",
-    description="Access a specific generated image by its unique identifier. Returns the full image data as a base64-encoded data URL.",
+    description="Access a specific generated image by its unique identifier. Returns the full image data as a base64-encoded data URL for MCP resource access.",
     mime_type="text/plain"
 )
 async def get_generated_image(

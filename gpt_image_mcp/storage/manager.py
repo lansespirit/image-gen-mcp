@@ -12,6 +12,7 @@ import aiofiles
 from PIL import Image
 
 from ..config.settings import StorageSettings
+from ..utils.path_utils import build_image_storage_path, find_existing_image_path
 
 
 class ImageStorageManager:
@@ -36,11 +37,8 @@ class ImageStorageManager:
         return f"img_{timestamp}_{random_part}"
     
     def get_image_path(self, image_id: str, file_format: str = "png") -> Path:
-        """Get the full path for an image file."""
-        now = datetime.now()
-        date_path = self.images_path / str(now.year) / f"{now.month:02d}" / f"{now.day:02d}"
-        date_path.mkdir(parents=True, exist_ok=True)
-        return date_path / f"{image_id}.{file_format.lower()}"
+        """Get the full path for an image file using date from image_id."""
+        return build_image_storage_path(self.base_path, image_id, file_format)
     
     def get_metadata_path(self, image_id: str) -> Path:
         """Get the full path for an image metadata file."""
@@ -57,6 +55,9 @@ class ImageStorageManager:
         image_id = self.generate_image_id()
         image_path = self.get_image_path(image_id, file_format)
         metadata_path = self.get_metadata_path(image_id)
+        
+        # Ensure directory exists
+        image_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Save image file
         async with aiofiles.open(image_path, "wb") as f:
@@ -93,13 +94,8 @@ class ImageStorageManager:
     
     async def load_image(self, image_id: str) -> tuple[bytes, Dict[str, Any]]:
         """Load image data and metadata from storage."""
-        # Find the image file (try different formats)
-        image_path = None
-        for ext in ["png", "jpg", "jpeg", "webp"]:
-            potential_path = self.get_image_path(image_id, ext)
-            if potential_path.exists():
-                image_path = potential_path
-                break
+        # Find the image file using the utility function
+        image_path = find_existing_image_path(self.base_path, image_id)
         
         if not image_path:
             raise FileNotFoundError(f"Image {image_id} not found")
