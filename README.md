@@ -2,32 +2,44 @@
 
 An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1 model for text-to-image generation services.
 
+> **📦 Package Manager**: This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management. UV provides better dependency resolution, faster installs, and proper environment isolation compared to traditional pip/venv workflows.
+
 ## Features
 
-### <� Image Generation
+### 🎨 Image Generation
 - **Text-to-Image**: Generate high-quality images from text descriptions using gpt-image-1
 - **Image Editing**: Edit existing images with text instructions
 - **Multiple Formats**: Support for PNG, JPEG, and WebP output formats
 - **Quality Control**: Auto, high, medium, and low quality settings
 - **Background Control**: Transparent, opaque, or auto background options
 
-### <� MCP Integration
+### 🔗 MCP Integration
 - **FastMCP Framework**: Built with the latest MCP Python SDK
+- **Multiple Transports**: STDIO, HTTP, and SSE transport support
 - **Structured Output**: Validated tool responses with proper schemas
 - **Resource Access**: MCP resources for image retrieval and management
 - **Prompt Templates**: 10+ built-in templates for common use cases
 
-### =� Storage & Caching
+### 💾 Storage & Caching
 - **Local Storage**: Organized directory structure with metadata
+- **URL-based Access**: Transport-aware URL generation for images
 - **Dual Access**: Immediate base64 data + persistent resource URIs
-- **Smart Caching**: Memory-based caching with TTL
+- **Smart Caching**: Memory-based caching with TTL and Redis support
 - **Auto Cleanup**: Configurable file retention policies
 
-### =� Development Features
+### 🚀 Production Deployment
+- **Docker Support**: Production-ready Docker containers
+- **Multi-Transport**: STDIO for Claude Desktop, HTTP for web deployment
+- **Reverse Proxy**: Nginx configuration with rate limiting
+- **Monitoring**: Grafana and Prometheus integration
+- **SSL/TLS**: Automatic certificate management with Certbot
+
+### 🛠️ Development Features
 - **Type Safety**: Full type hints with Pydantic models
 - **Error Handling**: Comprehensive error handling and logging
 - **Configuration**: Environment-based configuration management
 - **Testing**: Pytest-based test suite with async support
+- **Dev Tools**: Hot reload, Redis Commander, debug logging
 
 ## Quick Start
 
@@ -46,6 +58,8 @@ An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1
    uv sync
    ```
 
+   > **Note**: This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management. UV provides better dependency resolution and faster installs compared to pip.
+
 2. **Configure environment**:
    ```bash
    cp .env.example .env
@@ -54,8 +68,8 @@ An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1
 
 3. **Test the setup**:
    ```bash
-   python scripts/dev.py setup
-   python scripts/dev.py test
+   uv run python scripts/dev.py setup
+   uv run python scripts/dev.py test
    ```
 
 ### Running the Server
@@ -65,34 +79,37 @@ An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1
 # HTTP transport for web development and testing
 ./run.sh dev
 
+# HTTP transport with development tools (Redis Commander)
+./run.sh dev --tools
+
 # STDIO transport for Claude Desktop integration  
 ./run.sh stdio
 
-# Production deployment
+# Production deployment with monitoring
 ./run.sh prod
 ```
 
 #### Manual Execution
 ```bash
 # STDIO transport (default) - for Claude Desktop
-python -m gpt_image_mcp.server
+uv run python -m gpt_image_mcp.server
 
 # HTTP transport - for web deployment
-python -m gpt_image_mcp.server --transport streamable-http --port 3001
+uv run python -m gpt_image_mcp.server --transport streamable-http --port 3001
 
 # SSE transport - for real-time applications
-python -m gpt_image_mcp.server --transport sse --port 8080
+uv run python -m gpt_image_mcp.server --transport sse --port 8080
 
 # With custom configuration
-python -m gpt_image_mcp.server --config /path/to/.env --log-level DEBUG
+uv run python -m gpt_image_mcp.server --config /path/to/.env --log-level DEBUG
 
 # Enable CORS for web development
-python -m gpt_image_mcp.server --transport streamable-http --cors
+uv run python -m gpt_image_mcp.server --transport streamable-http --cors
 ```
 
 #### Command Line Options
 ```bash
-python -m gpt_image_mcp.server --help
+uv run python -m gpt_image_mcp.server --help
 
 GPT Image MCP Server - Generate and edit images using OpenAI's gpt-image-1 model
 
@@ -108,26 +125,43 @@ options:
 
 Examples:
   # Claude Desktop integration
-  python -m gpt_image_mcp.server
+  uv run python -m gpt_image_mcp.server
 
-  # Web deployment  
-  python -m gpt_image_mcp.server --transport streamable-http --port 3001
+  # Web deployment with Redis cache
+  uv run python -m gpt_image_mcp.server --transport streamable-http --port 3001
 
-  # Development with debug logging
-  python -m gpt_image_mcp.server --log-level DEBUG --cors
+  # Development with debug logging and tools
+  uv run python -m gpt_image_mcp.server --log-level DEBUG --cors
 ```
 
 #### Claude Desktop Integration
 ```bash
-# Install for Claude Desktop
-uv run mcp install gpt_image_mcp/server.py --name "GPT Image Server"
-
-# Or add to Claude Desktop configuration manually
+# Option 1: Using UV (Recommended)
+# Add to Claude Desktop configuration:
 {
   "mcpServers": {
-    "gpt-image": {
+    "gpt-image-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/gpt-image-mcp",
+        "run",
+        "gpt-image-mcp"
+      ],
+      "env": {
+        "OPENAI_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+
+# Option 2: Using Python directly
+{
+  "mcpServers": {
+    "gpt-image-mcp": {
       "command": "python",
       "args": ["-m", "gpt_image_mcp.server"],
+      "cwd": "/path/to/gpt-image-mcp",
       "env": {
         "OPENAI_API_KEY": "your-api-key-here"
       }
@@ -135,6 +169,8 @@ uv run mcp install gpt_image_mcp/server.py --name "GPT Image Server"
   }
 }
 ```
+
+> **Recommended**: Use the UV approach (Option 1) as it ensures proper dependency management and isolation.
 
 ## Usage Examples
 
@@ -229,65 +265,175 @@ Built-in templates for common use cases:
 Configure via environment variables or `.env` file:
 
 ```bash
-# Required
-OPENAI_API_KEY=sk-your-api-key-here
+# =============================================================================
+# OpenAI Configuration (Required)
+# =============================================================================
+OPENAI__API_KEY=sk-your-api-key-here
+OPENAI__BASE_URL=https://api.openai.com/v1
+OPENAI__ORGANIZATION=org-your-org-id
+OPENAI__TIMEOUT=300.0
+OPENAI__MAX_RETRIES=3
 
-# Optional - Image Defaults
-DEFAULT_QUALITY=auto
-DEFAULT_SIZE=1536x1024
-DEFAULT_STYLE=vivid
-MODERATION_LEVEL=auto
+# =============================================================================
+# Image Generation Settings
+# =============================================================================
+IMAGES__DEFAULT_MODEL=gpt-image-1
+IMAGES__DEFAULT_QUALITY=auto
+IMAGES__DEFAULT_SIZE=1536x1024
+IMAGES__DEFAULT_STYLE=vivid
+IMAGES__DEFAULT_MODERATION=auto
+IMAGES__DEFAULT_OUTPUT_FORMAT=png
+# Base URL for image hosting (e.g., https://cdn.example.com for nginx/CDN)
+IMAGES__BASE_HOST=
 
-# Storage Settings
-STORAGE_BASE_PATH=./storage
-STORAGE_RETENTION_DAYS=30
-STORAGE_MAX_SIZE_GB=10
+# =============================================================================
+# Server Configuration
+# =============================================================================
+SERVER__NAME=GPT Image MCP Server
+SERVER__VERSION=0.1.0
+SERVER__PORT=3001
+SERVER__HOST=127.0.0.1
+SERVER__LOG_LEVEL=INFO
+SERVER__RATE_LIMIT_RPM=50
 
-# Caching
-CACHE_ENABLED=true
-CACHE_TTL_HOURS=24
-MAX_CACHE_SIZE_MB=500
+# =============================================================================
+# Storage Configuration
+# =============================================================================
+STORAGE__BASE_PATH=./storage
+STORAGE__RETENTION_DAYS=30
+STORAGE__MAX_SIZE_GB=10.0
+STORAGE__CLEANUP_INTERVAL_HOURS=24
 
-# Server
-SERVER_PORT=3001
-LOG_LEVEL=INFO
-RATE_LIMIT_RPM=50
+# =============================================================================
+# Cache Configuration
+# =============================================================================
+CACHE__ENABLED=true
+CACHE__TTL_HOURS=24
+CACHE__BACKEND=memory
+CACHE__MAX_SIZE_MB=500
+# CACHE__REDIS_URL=redis://localhost:6379
+```
+
+## Deployment
+
+### Production Deployment
+
+The server supports production deployment with Docker, monitoring, and reverse proxy:
+
+```bash
+# Quick production deployment
+./run.sh prod
+
+# Manual Docker Compose deployment
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+**Production Stack includes:**
+- **GPT Image MCP Server**: Main application container
+- **Redis**: Caching and session storage
+- **Nginx**: Reverse proxy with rate limiting (configured separately)
+- **Prometheus**: Metrics collection
+- **Grafana**: Monitoring dashboards
+
+**Access Points:**
+- Main Service: `http://localhost:3001` (behind proxy)
+- Grafana Dashboard: `http://localhost:3000`
+- Prometheus: `http://localhost:9090` (localhost only)
+
+### VPS Deployment
+
+For VPS deployment with SSL, monitoring, and production hardening:
+
+```bash
+# Download deployment script
+wget https://raw.githubusercontent.com/your-repo/gpt-image-mcp/main/deploy/vps-setup.sh
+chmod +x vps-setup.sh
+./vps-setup.sh
+```
+
+Features included:
+- Docker containerization
+- Nginx reverse proxy with SSL
+- Automatic certificate management (Certbot)
+- System monitoring and logging
+- Firewall configuration
+- Automatic backups
+
+See [VPS Deployment Guide](deploy/VPS_DEPLOYMENT_GUIDE.md) for detailed instructions.
+
+### Docker Configuration
+
+Available Docker Compose profiles:
+
+```bash
+# Development with HTTP transport
+docker-compose -f docker-compose.dev.yml up
+
+# Development with Redis Commander
+docker-compose -f docker-compose.dev.yml --profile tools up
+
+# STDIO transport for desktop integration
+docker-compose -f docker-compose.dev.yml --profile stdio up
+
+# Production with monitoring
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ## Development
 
-### Setup Development Environment
+### Development Tools
 ```bash
-python scripts/dev.py setup
+# Setup development environment
+uv run python scripts/dev.py setup
+
+# Run tests
+uv run python scripts/dev.py test
+
+# Code quality and formatting
+uv run python scripts/dev.py lint     # Check code quality with ruff and mypy
+uv run python scripts/dev.py format   # Format code with black
+
+# Run example client
+uv run python scripts/dev.py example
+
+# Development server with auto-reload
+./run.sh dev --tools           # Includes Redis Commander UI
 ```
 
-### Run Tests
+### Testing
 ```bash
-python scripts/dev.py test
-```
+# Run full test suite
+./run.sh test
 
-### Code Quality
-```bash
-python scripts/dev.py lint     # Check code quality
-python scripts/dev.py format   # Format code
-```
-
-### Example Usage
-```bash
-python scripts/dev.py example  # Run example client
+# Run specific test categories
+uv run pytest tests/unit/      # Unit tests only
+uv run pytest tests/integration/ # Integration tests only
+uv run pytest -v --cov=gpt_image_mcp # With coverage
 ```
 
 ## Architecture
 
-The server follows a modular architecture:
+The server follows a modular, production-ready architecture:
 
-- **Core Server**: FastMCP-based MCP server implementation
-- **OpenAI Integration**: Robust API client with retry logic
-- **Storage Manager**: Organized local image storage
-- **Cache Manager**: Memory-based caching system
-- **Tool Layer**: Image generation and editing tools
-- **Resource Layer**: MCP resources for data access
-- **Prompt Layer**: Template system for optimized prompts
+**Core Components:**
+- **Server Layer** (`server.py`): FastMCP-based MCP server with multi-transport support
+- **Configuration** (`config/`): Environment-based settings management with validation
+- **Tool Layer** (`tools/`): Image generation and editing capabilities
+- **Resource Layer** (`resources/`): MCP resources for data access and model registry
+- **Storage Manager** (`storage/`): Organized local image storage with cleanup
+- **Cache Manager** (`utils/cache.py`): Memory and Redis-based caching system
+
+**Infrastructure:**
+- **OpenAI Integration** (`utils/openai_client.py`): Robust API client with retry logic
+- **Prompt Templates** (`prompts/`): Template system for optimized prompts
+- **Type System** (`types/`): Pydantic models for type safety
+- **Validation** (`utils/validators.py`): Input validation and sanitization
+
+**Deployment:**
+- **Docker Support**: Development and production containers
+- **Multi-Transport**: STDIO, HTTP, SSE transport layers
+- **Monitoring**: Prometheus metrics and Grafana dashboards
+- **Reverse Proxy**: Nginx configuration with SSL and rate limiting
 
 ## Cost Estimation
 
