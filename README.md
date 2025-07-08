@@ -26,13 +26,13 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 ## Visual Showcase
 
 ### Real-World Usage
-![Claude Desktop with GPT Image MCP](assets/images/claude-desktop-using-gpt-image-mcp.jpg)
+![Claude Desktop with GPT Image MCP](https://raw.githubusercontent.com/lansespirit/gpt-image-mcp/main/assets/images/claude-desktop-using-gpt-image-mcp.jpg)
 *Claude Desktop seamlessly generating images through MCP integration*
 
 ### Generated Examples
 <div align="center">
-  <img src="assets/images/img_20250708111322_9618bc559949.png" alt="Generated Image Example 1" width="400"/>
-  <img src="assets/images/img_20250708111847_1c78e63ed4e0.png" alt="Generated Image Example 2" width="400"/>
+  <img src="https://raw.githubusercontent.com/lansespirit/gpt-image-mcp/main/assets/images/img_20250708111322_9618bc559949.png" alt="Generated Image Example 1" width="400"/>
+  <img src="https://raw.githubusercontent.com/lansespirit/gpt-image-mcp/main/assets/images/img_20250708111847_1c78e63ed4e0.png" alt="Generated Image Example 2" width="400"/>
 </div>
 
 *High-quality images generated through the MCP server, demonstrating professional-grade output*
