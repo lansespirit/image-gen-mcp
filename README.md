@@ -1,8 +1,69 @@
 # GPT Image MCP Server
 
-An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1 model for text-to-image generation services.
+**Empowering Universal Image Generation for AI Chatbots**
+
+Traditional AI chatbot interfaces are limited to text-only interactions, regardless of how powerful their underlying language models are. GPT Image MCP Server bridges this gap by enabling **any LLM-powered chatbot client** to generate professional-quality images through the standardized Model Context Protocol (MCP).
+
+Whether you're using Claude Desktop, a custom ChatGPT interface, Llama-based applications, or any other LLM client that supports MCP, this server democratizes access to OpenAI's state-of-the-art gpt-image-1 model, transforming text-only conversations into rich, visual experiences.
 
 > **📦 Package Manager**: This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management. UV provides better dependency resolution, faster installs, and proper environment isolation compared to traditional pip/venv workflows.
+
+## Why This Matters
+
+The AI ecosystem has evolved to include powerful language models from multiple providers (OpenAI, Anthropic, Meta, Google, etc.), but image generation capabilities remain fragmented and platform-specific. This creates a significant gap:
+
+- **🚫 Limited Access**: Only certain platforms offer built-in image generation
+- **🔒 Vendor Lock-in**: Image capabilities tied to specific LLM providers  
+- **⚡ Poor Integration**: Switching between text and image tools breaks workflow
+- **🛠️ Complex Setup**: Each client needs custom integrations
+
+**GPT Image MCP Server solves this by providing:**
+- **🌐 Universal Compatibility**: Works with any MCP-enabled LLM client
+- **🔄 Seamless Integration**: No context switching or workflow interruption
+- **⚡ Standardized Protocol**: One server, multiple client support
+- **🎨 Professional Quality**: Access to OpenAI's latest image generation technology
+
+## Visual Showcase
+
+### Real-World Usage
+![Claude Desktop with GPT Image MCP](assets/images/claude-desktop-using-gpt-image-mcp.jpg)
+*Claude Desktop seamlessly generating images through MCP integration*
+
+### Generated Examples
+<div align="center">
+  <img src="assets/images/img_20250708111322_9618bc559949.png" alt="Generated Image Example 1" width="400"/>
+  <img src="assets/images/img_20250708111847_1c78e63ed4e0.png" alt="Generated Image Example 2" width="400"/>
+</div>
+
+*High-quality images generated through the MCP server, demonstrating professional-grade output*
+
+## Use Cases & Applications
+
+### 🎯 Content Creation Workflows
+- **Bloggers & Writers**: Generate custom illustrations directly in writing tools
+- **Social Media Managers**: Create platform-specific graphics without leaving chat interfaces
+- **Marketing Teams**: Rapid prototyping of visual concepts during brainstorming sessions
+- **Educators**: Generate teaching materials and visual aids on-demand
+
+### 🚀 Development & Design
+- **UI/UX Designers**: Quick mockup generation during design discussions
+- **Frontend Developers**: Placeholder and concept images within development environments
+- **Technical Writers**: Custom diagrams and illustrations for documentation
+- **Product Managers**: Visual concept communication in any LLM-powered tool
+
+### 🏢 Enterprise Integration
+- **Customer Support**: Generate visual explanations and guides
+- **Sales Teams**: Custom presentation materials tailored to client needs
+- **Training Programs**: Visual learning materials created in conversational interfaces
+- **Internal Tools**: Add image generation to existing LLM-powered applications
+
+### 🎨 Creative Industries
+- **Game Developers**: Concept art and asset ideation
+- **Film & Media**: Storyboard and concept visualization
+- **Architecture**: Quick visual references and mood boards
+- **Advertising**: Campaign concept development
+
+> **Key Advantage**: Unlike platform-specific solutions, this universal approach means your image generation capabilities move with you across different tools and workflows, eliminating vendor lock-in and maximizing workflow efficiency.
 
 ## Features
 
@@ -134,10 +195,12 @@ Examples:
   uv run python -m gpt_image_mcp.server --log-level DEBUG --cors
 ```
 
-#### Claude Desktop Integration
-```bash
-# Option 1: Using UV (Recommended)
-# Add to Claude Desktop configuration:
+#### MCP Client Integration
+
+This server works with **any MCP-compatible chatbot client**. Here are configuration examples:
+
+##### Claude Desktop (Anthropic)
+```json
 {
   "mcpServers": {
     "gpt-image-mcp": {
@@ -154,14 +217,15 @@ Examples:
     }
   }
 }
+```
 
-# Option 2: Using Python directly
+##### Continue.dev (VS Code Extension)
+```json
 {
   "mcpServers": {
-    "gpt-image-mcp": {
-      "command": "python",
-      "args": ["-m", "gpt_image_mcp.server"],
-      "cwd": "/path/to/gpt-image-mcp",
+    "gpt-image": {
+      "command": "uv",
+      "args": ["--directory", "/path/to/gpt-image-mcp", "run", "gpt-image-mcp"],
       "env": {
         "OPENAI_API_KEY": "your-api-key-here"
       }
@@ -170,7 +234,13 @@ Examples:
 }
 ```
 
-> **Recommended**: Use the UV approach (Option 1) as it ensures proper dependency management and isolation.
+##### Custom MCP Clients
+For other MCP-compatible applications, use the standard MCP STDIO transport:
+```bash
+uv run python -m gpt_image_mcp.server
+```
+
+> **Universal Compatibility**: This server follows the standard MCP protocol, ensuring compatibility with current and future MCP-enabled clients across the AI ecosystem.
 
 ## Usage Examples
 
@@ -486,4 +556,22 @@ For issues and questions:
 
 ---
 
-**Built with d using the Model Context Protocol and OpenAI's gpt-image-1**
+**Built with ❤️ using the Model Context Protocol and OpenAI's gpt-image-1**
+
+## The Future of AI Integration
+
+The Model Context Protocol represents a paradigm shift towards **standardized AI tool integration**. As more LLM clients adopt MCP support, servers like this one become increasingly valuable by providing universal capabilities across the entire ecosystem.
+
+**Current MCP Adoption:**
+- ✅ **Claude Desktop** (Anthropic) - Full MCP support
+- ✅ **Continue.dev** - VS Code extension with MCP integration  
+- ✅ **Zed Editor** - Built-in MCP support for coding workflows
+- 🚀 **Growing Ecosystem** - New clients adopting MCP regularly
+
+**Vision**: A future where AI capabilities are **modular, interoperable, and user-controlled** rather than locked to specific platforms.
+
+---
+
+**🌟 Building the Universal AI Ecosystem**
+
+*Democratizing advanced AI capabilities across all platforms through the power of the Model Context Protocol. One server, infinite possibilities.*
