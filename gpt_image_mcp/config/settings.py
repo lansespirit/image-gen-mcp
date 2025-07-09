@@ -1,4 +1,4 @@
-"""Configuration settings for the GPT Image MCP Server."""
+"""Configuration settings for the Image Gen MCP Server."""
 
 from pathlib import Path
 from typing import List, Literal
@@ -136,7 +136,7 @@ class CacheSettings(BaseModel):
 class ServerSettings(BaseModel):
     """Server configuration."""
     
-    name: str = Field("GPT Image MCP Server", description="Server name")
+    name: str = Field("Image Gen MCP Server", description="Server name")
     version: str = Field("0.1.0", description="Server version")
     port: int = Field(3001, description="Server port")
     host: str = Field("127.0.0.1", description="Server host")

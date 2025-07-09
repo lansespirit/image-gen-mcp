@@ -1,4 +1,4 @@
-"""Test package for GPT Image MCP Server."""
+"""Test package for Image Gen MCP Server."""
 
 import sys
 from pathlib import Path

@@ -1,4 +1,4 @@
-"""Pydantic models for GPT Image MCP Server parameters."""
+"""Pydantic models for Image Gen MCP Server parameters."""
 
 from pydantic import BaseModel, Field
 from typing import Optional

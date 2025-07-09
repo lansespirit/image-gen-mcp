@@ -1,5 +1,5 @@
 """
-Enum definitions for GPT Image MCP Server parameters.
+Enum definitions for Image Gen MCP Server parameters.
 
 These enums provide type-safe parameter values that are automatically
 exposed to LLMs through the MCP protocol's list_tools functionality.

@@ -84,7 +84,7 @@ def mock_settings(
     
     return Settings(
         server=ServerSettings(
-            name="Test GPT Image MCP Server",
+            name="Test Image Gen MCP Server",
             version="1.0.0-test",
             log_level="INFO",
             port=3001,

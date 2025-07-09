@@ -1,4 +1,4 @@
-"""Type definitions for GPT Image MCP Server."""
+"""Type definitions for Image Gen MCP Server."""
 
 from .enums import (
     ImageQuality,

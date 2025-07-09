@@ -1,6 +1,6 @@
-# GPT Image MCP Server - VPS Deployment Guide
+# Image Gen MCP Server - VPS Deployment Guide
 
-本指南详细说明如何在VPS服务器上使用Docker部署GPT Image MCP Server。
+本指南详细说明如何在VPS服务器上使用Docker部署Image Gen MCP Server。
 
 ## 🚀 快速部署
 
@@ -15,7 +15,7 @@
 
 ```bash
 # 1. 下载部署脚本
-wget https://raw.githubusercontent.com/your-repo/gpt-image-mcp/main/deploy/vps-setup.sh
+wget https://raw.githubusercontent.com/your-repo/image-gen-mcp/main/deploy/vps-setup.sh
 
 # 2. 运行部署脚本
 chmod +x vps-setup.sh
@@ -57,9 +57,9 @@ newgrp docker
 
 ```bash
 # 创建应用目录
-sudo mkdir -p /opt/gpt-image-mcp
-sudo chown $USER:$USER /opt/gpt-image-mcp
-cd /opt/gpt-image-mcp
+sudo mkdir -p /opt/image-gen-mcp
+sudo chown $USER:$USER /opt/image-gen-mcp
+cd /opt/image-gen-mcp
 
 # 创建必要的子目录
 mkdir -p storage/{images,cache} logs monitoring nginx ssl
@@ -72,10 +72,10 @@ mkdir -p storage/{images,cache} logs monitoring nginx ssl
 git clone <your-repo> .
 
 # 方法2: SCP上传
-scp -r ./gpt-image-mcp user@your-server:/opt/gpt-image-mcp/
+scp -r ./image-gen-mcp user@your-server:/opt/image-gen-mcp/
 
 # 方法3: rsync同步
-rsync -avz --delete ./gpt-image-mcp/ user@your-server:/opt/gpt-image-mcp/
+rsync -avz --delete ./image-gen-mcp/ user@your-server:/opt/image-gen-mcp/
 ```
 
 ### 5. 配置环境变量
@@ -101,7 +101,7 @@ GRAFANA_PASSWORD=your-secure-password
 sudo apt install -y nginx
 
 # 创建站点配置
-sudo nano /etc/nginx/sites-available/gpt-image-mcp
+sudo nano /etc/nginx/sites-available/image-gen-mcp
 ```
 
 Nginx配置内容（替换your-domain.com）：
@@ -139,7 +139,7 @@ server {
 
 启用站点：
 ```bash
-sudo ln -s /etc/nginx/sites-available/gpt-image-mcp /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/image-gen-mcp /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl reload nginx
@@ -188,20 +188,20 @@ sudo crontab -e
 
 ```bash
 # 创建systemd服务文件
-sudo nano /etc/systemd/system/gpt-image-mcp.service
+sudo nano /etc/systemd/system/image-gen-mcp.service
 ```
 
 服务文件内容：
 ```ini
 [Unit]
-Description=GPT Image MCP Server
+Description=Image Gen MCP Server
 Requires=docker.service
 After=docker.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/gpt-image-mcp
+WorkingDirectory=/opt/image-gen-mcp
 ExecStart=/usr/local/bin/docker-compose -f docker-compose.prod.yml up -d
 ExecStop=/usr/local/bin/docker-compose -f docker-compose.prod.yml down
 TimeoutStartSec=0
@@ -215,8 +215,8 @@ WantedBy=multi-user.target
 启用服务：
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable gpt-image-mcp
-sudo systemctl start gpt-image-mcp
+sudo systemctl enable image-gen-mcp
+sudo systemctl start image-gen-mcp
 ```
 
 ## 🔧 运维管理
@@ -225,19 +225,19 @@ sudo systemctl start gpt-image-mcp
 
 ```bash
 # 启动服务
-sudo systemctl start gpt-image-mcp
+sudo systemctl start image-gen-mcp
 
 # 停止服务
-sudo systemctl stop gpt-image-mcp
+sudo systemctl stop image-gen-mcp
 
 # 重启服务
-sudo systemctl restart gpt-image-mcp
+sudo systemctl restart image-gen-mcp
 
 # 查看状态
-sudo systemctl status gpt-image-mcp
+sudo systemctl status image-gen-mcp
 
 # 查看日志
-journalctl -u gpt-image-mcp -f
+journalctl -u image-gen-mcp -f
 ```
 
 ### Docker管理
@@ -247,13 +247,13 @@ journalctl -u gpt-image-mcp -f
 docker ps
 
 # 查看容器日志
-docker logs gpt-image-mcp -f
+docker logs image-gen-mcp -f
 
 # 进入容器
-docker exec -it gpt-image-mcp bash
+docker exec -it image-gen-mcp bash
 
 # 重启特定容器
-docker restart gpt-image-mcp
+docker restart image-gen-mcp
 
 # 更新应用
 docker-compose -f docker-compose.prod.yml pull
@@ -279,11 +279,11 @@ sudo htpasswd -c /etc/nginx/.htpasswd admin
 
 # 设置定时备份
 crontab -e
-# 添加: 0 2 * * * /opt/gpt-image-mcp/backup.sh
+# 添加: 0 2 * * * /opt/image-gen-mcp/backup.sh
 
 # 恢复备份
-cd /opt/backups/gpt-image-mcp
-tar -xzf storage_20240101_020000.tar.gz -C /opt/gpt-image-mcp/
+cd /opt/backups/image-gen-mcp
+tar -xzf storage_20240101_020000.tar.gz -C /opt/image-gen-mcp/
 ```
 
 ### 更新部署
@@ -333,7 +333,7 @@ netstat -tulpn
 
 ```bash
 # 查看应用日志
-tail -f /opt/gpt-image-mcp/logs/app.log
+tail -f /opt/image-gen-mcp/logs/app.log
 
 # 查看Nginx日志
 sudo tail -f /var/log/nginx/access.log
@@ -388,10 +388,10 @@ sudo tail /var/log/auth.log
 1. **容器无法启动**
    ```bash
    # 检查日志
-   docker logs gpt-image-mcp
+   docker logs image-gen-mcp
    
    # 检查环境变量
-   docker exec gpt-image-mcp env
+   docker exec image-gen-mcp env
    ```
 
 2. **端口占用**
@@ -427,8 +427,8 @@ sudo tail /var/log/auth.log
    ```bash
    # 使用备份镜像
    docker-compose -f docker-compose.prod.yml down
-   docker tag gpt-image-mcp:latest gpt-image-mcp:backup
-   docker tag gpt-image-mcp:previous gpt-image-mcp:latest
+   docker tag image-gen-mcp:latest image-gen-mcp:backup
+   docker tag image-gen-mcp:previous image-gen-mcp:latest
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
@@ -438,8 +438,8 @@ sudo tail /var/log/auth.log
    docker-compose -f docker-compose.prod.yml down
    
    # 恢复数据
-   cd /opt/backups/gpt-image-mcp
-   tar -xzf storage_backup.tar.gz -C /opt/gpt-image-mcp/
+   cd /opt/backups/image-gen-mcp
+   tar -xzf storage_backup.tar.gz -C /opt/image-gen-mcp/
    
    # 重启服务
    docker-compose -f docker-compose.prod.yml up -d
@@ -463,4 +463,4 @@ sudo tail /var/log/auth.log
 
 ---
 
-通过以上配置，你将获得一个**生产就绪的、安全的、可监控的**GPT Image MCP Server部署方案。
+通过以上配置，你将获得一个**生产就绪的、安全的、可监控的**Image Gen MCP Server部署方案。

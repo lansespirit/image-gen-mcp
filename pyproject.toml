@@ -1,5 +1,5 @@
 [project]
-name = "gpt-image-mcp"
+name = "image-gen-mcp"
 version = "0.1.0"
 description = "An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1 model for text-to-image generation services"
 readme = "README.md"
@@ -31,7 +31,7 @@ cache = [
 ]
 
 [project.scripts]
-gpt-image-mcp = "gpt_image_mcp.server:main"
+image-gen-mcp = "gpt_image_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

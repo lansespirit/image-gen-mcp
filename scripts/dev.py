@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Development script for the GPT Image MCP Server."""
+"""Development script for the Image Gen MCP Server."""
 
 import argparse
 import asyncio
@@ -55,7 +55,7 @@ def run_tests():
 
 def run_server():
     """Run the MCP server in development mode."""
-    print("🚀 Starting GPT Image MCP Server...")
+    print("🚀 Starting Image Gen MCP Server...")
     
     # Check for OpenAI API key
     if not os.getenv("OPENAI_API_KEY"):
@@ -171,7 +171,7 @@ def check_dependencies():
 
 def main():
     """Main development script."""
-    parser = argparse.ArgumentParser(description="GPT Image MCP Server Development Tools")
+    parser = argparse.ArgumentParser(description="Image Gen MCP Server Development Tools")
     parser.add_argument(
         "command",
         choices=["setup", "test", "server", "example", "lint", "format", "check"],

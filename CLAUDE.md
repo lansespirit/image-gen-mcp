@@ -1,6 +1,6 @@
 - System: **WSL: Ubuntu**
-- Path: **\\wsl.localhost\Ubuntu\root\project\gpt-image-mcp**
-- Project name: **gpt-image-mcp**
+- Path: **\\wsl.localhost\Ubuntu\root\project\image-gen-mcp**
+- Project name: **image-gen-mcp**
 
 ## Reference Files
 
@@ -8,7 +8,7 @@
 ./docs/mcp_guide.md
 ./docs/openai_images_api_guide.md
 
-## GPT Image MCP Server
+## Image Gen MCP Server
 
 An MCP (Model Context Protocol) server that integrates with OpenAI's gpt-image-1 model for text-to-image generation services.
 

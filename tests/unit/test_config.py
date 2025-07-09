@@ -25,7 +25,7 @@ class TestServerSettings:
         """Test server settings with default values."""
         settings = ServerSettings()
         
-        assert settings.name == "GPT Image MCP Server"
+        assert settings.name == "Image Gen MCP Server"
         assert settings.version == "0.1.0"
         assert settings.log_level == "INFO"
         assert settings.port == 3001
@@ -395,7 +395,7 @@ DEFAULT_QUALITY=high
         )
         
         # Check that defaults are applied
-        assert settings.server.name == "GPT Image MCP Server"
+        assert settings.server.name == "Image Gen MCP Server"
         assert settings.storage.retention_days == 30
         assert settings.cache.enabled is True
         assert settings.images.default_quality == "auto"

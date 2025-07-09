@@ -79,7 +79,7 @@ def configure_logging(log_level: str = "INFO") -> None:
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="GPT Image MCP Server - Generate and edit images using OpenAI's gpt-image-1 model",
+        description="Image Gen MCP Server - Generate and edit images using multiple AI models (OpenAI, Gemini, etc.)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -253,7 +253,7 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[ServerContext]:
 # Create the MCP server with minimal configuration
 # FastMCP has sensible defaults, only override what's necessary
 mcp = FastMCP(
-    name="GPT Image MCP Server",
+    name="Image Gen MCP Server",
     lifespan=server_lifespan,
     dependencies=[
         "mcp[cli]",
@@ -407,7 +407,7 @@ async def server_info() -> dict[str, Any]:
     try:
         return {
             "server": {
-                "name": settings.server.name if settings else "GPT Image MCP Server",
+                "name": settings.server.name if settings else "Image Gen MCP Server",
                 "version": settings.server.version if settings else "unknown",
                 "log_level": settings.server.log_level if settings else "INFO"
             },
@@ -532,7 +532,7 @@ async def generate_image(
 
 @mcp.tool(
     title="Edit Image", 
-    description="Edit existing images using OpenAI's gpt-image-1 model with text instructions"
+    description="Edit existing images using multiple AI models (OpenAI, Gemini, etc.) with text instructions"
 )
 async def edit_image(
     image_data: str = Field(

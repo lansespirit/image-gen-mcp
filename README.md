@@ -1,8 +1,8 @@
-# GPT Image MCP Server
+# Image Gen MCP Server
 
 **Empowering Universal Image Generation for AI Chatbots**
 
-Traditional AI chatbot interfaces are limited to text-only interactions, regardless of how powerful their underlying language models are. GPT Image MCP Server bridges this gap by enabling **any LLM-powered chatbot client** to generate professional-quality images through the standardized Model Context Protocol (MCP).
+Traditional AI chatbot interfaces are limited to text-only interactions, regardless of how powerful their underlying language models are. Image Gen MCP Server bridges this gap by enabling **any LLM-powered chatbot client** to generate professional-quality images through the standardized Model Context Protocol (MCP).
 
 Whether you're using Claude Desktop, a custom ChatGPT interface, Llama-based applications, or any other LLM client that supports MCP, this server democratizes access to OpenAI's state-of-the-art gpt-image-1 model, transforming text-only conversations into rich, visual experiences.
 
@@ -17,7 +17,7 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 - **⚡ Poor Integration**: Switching between text and image tools breaks workflow
 - **🛠️ Complex Setup**: Each client needs custom integrations
 
-**GPT Image MCP Server solves this by providing:**
+**Image Gen MCP Server solves this by providing:**
 - **🌐 Universal Compatibility**: Works with any MCP-enabled LLM client
 - **🔄 Seamless Integration**: No context switching or workflow interruption
 - **⚡ Standardized Protocol**: One server, multiple client support
@@ -26,7 +26,7 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 ## Visual Showcase
 
 ### Real-World Usage
-![Claude Desktop with GPT Image MCP](assets/images/claude-desktop-using-gpt-image-mcp.jpg)
+![Claude Desktop with Image Gen MCP](assets/images/claude-desktop-using-image-gen-mcp.jpg)
 *Claude Desktop seamlessly generating images through MCP integration*
 
 ### Generated Examples
@@ -115,7 +115,7 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 1. **Clone and setup**:
    ```bash
    git clone <repository-url>
-   cd gpt-image-mcp
+   cd image-gen-mcp
    uv sync
    ```
 
@@ -172,7 +172,7 @@ uv run python -m gpt_image_mcp.server --transport streamable-http --cors
 ```bash
 uv run python -m gpt_image_mcp.server --help
 
-GPT Image MCP Server - Generate and edit images using OpenAI's gpt-image-1 model
+Image Gen MCP Server - Generate and edit images using OpenAI's gpt-image-1 model
 
 options:
   --config PATH         Path to configuration file (.env format)
@@ -203,13 +203,13 @@ This server works with **any MCP-compatible chatbot client**. Here are configura
 ```json
 {
   "mcpServers": {
-    "gpt-image-mcp": {
+    "image-gen-mcp": {
       "command": "uv",
       "args": [
         "--directory",
-        "/path/to/gpt-image-mcp",
+        "/path/to/image-gen-mcp",
         "run",
-        "gpt-image-mcp"
+        "image-gen-mcp"
       ],
       "env": {
         "OPENAI_API_KEY": "your-api-key-here"
@@ -225,7 +225,7 @@ This server works with **any MCP-compatible chatbot client**. Here are configura
   "mcpServers": {
     "gpt-image": {
       "command": "uv",
-      "args": ["--directory", "/path/to/gpt-image-mcp", "run", "gpt-image-mcp"],
+      "args": ["--directory", "/path/to/image-gen-mcp", "run", "image-gen-mcp"],
       "env": {
         "OPENAI_API_KEY": "your-api-key-here"
       }
@@ -359,7 +359,7 @@ IMAGES__BASE_HOST=
 # =============================================================================
 # Server Configuration
 # =============================================================================
-SERVER__NAME=GPT Image MCP Server
+SERVER__NAME=Image Gen MCP Server
 SERVER__VERSION=0.1.0
 SERVER__PORT=3001
 SERVER__HOST=127.0.0.1
@@ -399,7 +399,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 **Production Stack includes:**
-- **GPT Image MCP Server**: Main application container
+- **Image Gen MCP Server**: Main application container
 - **Redis**: Caching and session storage
 - **Nginx**: Reverse proxy with rate limiting (configured separately)
 - **Prometheus**: Metrics collection
@@ -416,7 +416,7 @@ For VPS deployment with SSL, monitoring, and production hardening:
 
 ```bash
 # Download deployment script
-wget https://raw.githubusercontent.com/your-repo/gpt-image-mcp/main/deploy/vps-setup.sh
+wget https://raw.githubusercontent.com/your-repo/image-gen-mcp/main/deploy/vps-setup.sh
 chmod +x vps-setup.sh
 ./vps-setup.sh
 ```
