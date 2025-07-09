@@ -4,7 +4,7 @@
 
 Traditional AI chatbot interfaces are limited to text-only interactions, regardless of how powerful their underlying language models are. Image Gen MCP Server bridges this gap by enabling **any LLM-powered chatbot client** to generate professional-quality images through the standardized Model Context Protocol (MCP).
 
-Whether you're using Claude Desktop, a custom ChatGPT interface, Llama-based applications, or any other LLM client that supports MCP, this server democratizes access to OpenAI's state-of-the-art gpt-image-1 model, transforming text-only conversations into rich, visual experiences.
+Whether you're using Claude Desktop, a custom ChatGPT interface, Llama-based applications, or any other LLM client that supports MCP, this server democratizes access to **multiple AI image generation models** including OpenAI's gpt-image-1, dall-e-3, dall-e-2, and Google's Imagen series (imagen-4, imagen-4-ultra, imagen-3), transforming text-only conversations into rich, visual experiences.
 
 > **📦 Package Manager**: This project uses [UV](https://docs.astral.sh/uv/) for fast, reliable Python package management. UV provides better dependency resolution, faster installs, and proper environment isolation compared to traditional pip/venv workflows.
 
@@ -21,7 +21,8 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 - **🌐 Universal Compatibility**: Works with any MCP-enabled LLM client
 - **🔄 Seamless Integration**: No context switching or workflow interruption
 - **⚡ Standardized Protocol**: One server, multiple client support
-- **🎨 Professional Quality**: Access to OpenAI's latest image generation technology
+- **🎨 Multi-Provider Support**: Access to OpenAI and Google's latest image generation models
+- **🔧 Unified Interface**: Single API for multiple AI providers with automatic model discovery
 
 ## Visual Showcase
 
@@ -67,12 +68,14 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 
 ## Features
 
-### 🎨 Image Generation
-- **Text-to-Image**: Generate high-quality images from text descriptions using gpt-image-1
-- **Image Editing**: Edit existing images with text instructions
+### 🎨 Multi-Provider Image Generation
+- **Multiple AI Models**: Support for OpenAI (gpt-image-1, dall-e-3, dall-e-2) and Google Gemini (imagen-4, imagen-4-ultra, imagen-3)
+- **Text-to-Image**: Generate high-quality images from text descriptions
+- **Image Editing**: Edit existing images with text instructions (OpenAI models)
 - **Multiple Formats**: Support for PNG, JPEG, and WebP output formats
 - **Quality Control**: Auto, high, medium, and low quality settings
 - **Background Control**: Transparent, opaque, or auto background options
+- **Dynamic Model Discovery**: Query available models and capabilities at runtime
 
 ### 🔗 MCP Integration
 - **FastMCP Framework**: Built with the latest MCP Python SDK
@@ -108,7 +111,8 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 
 - Python 3.10+
 - [UV package manager](https://docs.astral.sh/uv/)
-- OpenAI API key
+- OpenAI API key (for OpenAI models)
+- Google Gemini API key (for Gemini models, optional)
 
 ### Installation
 
@@ -124,7 +128,9 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 2. **Configure environment**:
    ```bash
    cp .env.example .env
-   # Edit .env and add your OpenAI API key
+   # Edit .env and add your API keys:
+   # - PROVIDERS__OPENAI__API_KEY for OpenAI models
+   # - PROVIDERS__GEMINI__API_KEY for Gemini models (optional)
    ```
 
 3. **Test the setup**:
@@ -288,16 +294,24 @@ stats = await session.read_resource("storage-stats://overview")
 
 ## Available Tools
 
+### `list_available_models`
+List all available image generation models and their capabilities.
+
+**Returns**: Dictionary with model information, capabilities, and provider details.
+
 ### `generate_image`
-Generate images from text descriptions.
+Generate images from text descriptions using any supported model.
 
 **Parameters**:
 - `prompt` (required): Text description of desired image
+- `model` (optional): Model to use (e.g., "gpt-image-1", "dall-e-3", "imagen-4")
 - `quality`: "auto" | "high" | "medium" | "low" (default: "auto")
 - `size`: "1024x1024" | "1536x1024" | "1024x1536" (default: "1536x1024")
 - `style`: "vivid" | "natural" (default: "vivid")
 - `output_format`: "png" | "jpeg" | "webp" (default: "png")
 - `background`: "auto" | "transparent" | "opaque" (default: "auto")
+
+**Note**: Parameter availability depends on the selected model. Use `list_available_models` to check capabilities.
 
 ### `edit_image`
 Edit existing images with text instructions.
@@ -336,13 +350,23 @@ Configure via environment variables or `.env` file:
 
 ```bash
 # =============================================================================
-# OpenAI Configuration (Required)
+# Provider Configuration
 # =============================================================================
-OPENAI__API_KEY=sk-your-api-key-here
-OPENAI__BASE_URL=https://api.openai.com/v1
-OPENAI__ORGANIZATION=org-your-org-id
-OPENAI__TIMEOUT=300.0
-OPENAI__MAX_RETRIES=3
+# OpenAI Provider (default enabled)
+PROVIDERS__OPENAI__API_KEY=sk-your-openai-api-key-here
+PROVIDERS__OPENAI__BASE_URL=https://api.openai.com/v1
+PROVIDERS__OPENAI__ORGANIZATION=org-your-org-id
+PROVIDERS__OPENAI__TIMEOUT=300.0
+PROVIDERS__OPENAI__MAX_RETRIES=3
+PROVIDERS__OPENAI__ENABLED=true
+
+# Gemini Provider (default disabled)
+PROVIDERS__GEMINI__API_KEY=your-gemini-api-key-here
+PROVIDERS__GEMINI__BASE_URL=https://generativelanguage.googleapis.com/v1beta/
+PROVIDERS__GEMINI__TIMEOUT=300.0
+PROVIDERS__GEMINI__MAX_RETRIES=3
+PROVIDERS__GEMINI__ENABLED=false
+PROVIDERS__GEMINI__DEFAULT_MODEL=imagen-4
 
 # =============================================================================
 # Image Generation Settings
@@ -493,11 +517,18 @@ The server follows a modular, production-ready architecture:
 - **Storage Manager** (`storage/`): Organized local image storage with cleanup
 - **Cache Manager** (`utils/cache.py`): Memory and Redis-based caching system
 
-**Infrastructure:**
-- **OpenAI Integration** (`utils/openai_client.py`): Robust API client with retry logic
-- **Prompt Templates** (`prompts/`): Template system for optimized prompts
+**Multi-Provider Architecture:**
+- **Provider Registry** (`providers/registry.py`): Centralized provider and model management
+- **Provider Base** (`providers/base.py`): Abstract base class for all providers
+- **OpenAI Provider** (`providers/openai.py`): OpenAI API integration with retry logic
+- **Gemini Provider** (`providers/gemini.py`): Google Gemini API integration
 - **Type System** (`types/`): Pydantic models for type safety
 - **Validation** (`utils/validators.py`): Input validation and sanitization
+
+**Infrastructure:**
+- **Prompt Templates** (`prompts/`): Template system for optimized prompts
+- **Dynamic Model Discovery**: Runtime model capability detection
+- **Parameter Translation**: Automatic parameter mapping between providers
 
 **Deployment:**
 - **Docker Support**: Development and production containers

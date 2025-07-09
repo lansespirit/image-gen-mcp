@@ -90,9 +90,45 @@ nano .env
 
 必须配置的环境变量：
 ```bash
-OPENAI_API_KEY=sk-your-actual-api-key-here
-GRAFANA_PASSWORD=your-secure-password
+# =============================================================================
+# Provider Configuration
+# =============================================================================
+# OpenAI Provider (required for gpt-image-1, dall-e-3, dall-e-2)
+PROVIDERS__OPENAI__API_KEY=sk-your-actual-openai-api-key-here
+PROVIDERS__OPENAI__ENABLED=true
+
+# Gemini Provider (optional for imagen-4, imagen-4-ultra, imagen-3)
+PROVIDERS__GEMINI__API_KEY=your-actual-gemini-api-key-here
+PROVIDERS__GEMINI__ENABLED=true
+
+# =============================================================================
+# Server Configuration
+# =============================================================================
+SERVER__NAME="Image Gen MCP Server"
+SERVER__HOST=0.0.0.0
+SERVER__PORT=3001
+
+# =============================================================================
+# Monitoring Configuration
+# =============================================================================
+GRAFANA_PASSWORD=your-secure-grafana-password
 ```
+
+推荐的完整配置：
+```bash
+# 复制完整配置示例
+cp .env.example .env
+
+# 编辑配置文件
+nano .env
+```
+
+配置说明：
+- `PROVIDERS__OPENAI__API_KEY`: OpenAI API密钥（必需）
+- `PROVIDERS__GEMINI__API_KEY`: Gemini API密钥（可选）
+- `PROVIDERS__*__ENABLED`: 启用/禁用特定提供商
+- `GRAFANA_PASSWORD`: Grafana监控面板密码
+- `SERVER__HOST=0.0.0.0`: 允许外部访问（生产环境必需）
 
 ### 6. 安装和配置Nginx
 
