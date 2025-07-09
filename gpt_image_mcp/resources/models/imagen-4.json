@@ -1,0 +1,55 @@
+{
+  "model_id": "imagen-4",
+  "name": "Imagen 4",
+  "version": "4.0",
+  "capabilities": [
+    "Text-to-Image Generation: High-quality 2K resolution image generation from text descriptions",
+    "Advanced Text Rendering: Enhanced typography for posters, comics, and slides",
+    "Multiple Formats: PNG, JPEG, WebP output formats",
+    "Aspect Ratio Control: 1:1, 3:4, 4:3, 9:16, 16:9 aspect ratios",
+    "Prompt Enhancement: LLM-based prompt rewriting for better quality"
+  ],
+  "pricing": {
+    "image_generation": "$0.04 per image",
+    "currency": "USD"
+  },
+  "rate_limits": {
+    "default": "Variable based on Gemini API limits",
+    "max_images_per_request": 1,
+    "concurrent_requests": "Based on API quota"
+  },
+  "size_options": [
+    "1024x1024 (1:1)",
+    "1536x1024 (3:2)",
+    "1024x1536 (2:3)"
+  ],
+  "quality_levels": [
+    "auto",
+    "high", 
+    "medium",
+    "low"
+  ],
+  "formats": [
+    "PNG",
+    "JPEG",
+    "WebP"
+  ],
+  "features": {
+    "aspect_ratio_control": "1:1, 3:4, 4:3, 9:16, 16:9",
+    "prompt_enhancement": "LLM-based prompt rewriting",
+    "text_rendering": "Enhanced typography and text generation",
+    "watermarking": "Non-visible SynthID watermark included",
+    "safety": "Built-in safety filtering and moderation"
+  },
+  "best_practices": [
+    "Use descriptive, detailed prompts for better results",
+    "Consider aspect ratio for intended use case",
+    "Enable prompt enhancement for higher quality outputs",
+    "Leverage superior text rendering for graphics with text",
+    "Ideal for high-resolution 2K images with fine details"
+  ],
+  "examples": [
+    "generate_image(prompt='A detailed poster with text \"Welcome Home\" in elegant script', model='imagen-4', size='1536x1024')",
+    "generate_image(prompt='Professional headshot of a businesswoman in modern office', model='imagen-4', quality='high')"
+  ]
+}

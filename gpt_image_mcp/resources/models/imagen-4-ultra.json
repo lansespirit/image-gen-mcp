@@ -1,0 +1,59 @@
+{
+  "model_id": "imagen-4-ultra",
+  "name": "Imagen 4 Ultra",
+  "version": "4.0-ultra",
+  "capabilities": [
+    "Ultra High-Quality Text-to-Image Generation: Best-in-class prompt adherence and image quality",
+    "Precision Text Rendering: Superior typography for professional graphics",
+    "Multiple Formats: PNG, JPEG, WebP output formats", 
+    "Aspect Ratio Control: 1:1, 3:4, 4:3, 9:16, 16:9 aspect ratios",
+    "Enhanced Prompt Following: Designed for outputs highly aligned with text prompts"
+  ],
+  "pricing": {
+    "image_generation": "$0.08 per image (estimated)",
+    "currency": "USD",
+    "note": "Premium pricing for ultra-quality model"
+  },
+  "rate_limits": {
+    "default": "Variable based on Gemini API limits",
+    "max_images_per_request": 1,
+    "note": "Can only generate one image at a time",
+    "concurrent_requests": "Based on API quota"
+  },
+  "size_options": [
+    "1024x1024 (1:1)",
+    "1536x1024 (3:2)", 
+    "1024x1536 (2:3)"
+  ],
+  "quality_levels": [
+    "auto",
+    "high",
+    "medium", 
+    "low"
+  ],
+  "formats": [
+    "PNG",
+    "JPEG",
+    "WebP"
+  ],
+  "features": {
+    "ultra_quality": "Highest quality image generation with superior prompt adherence",
+    "aspect_ratio_control": "1:1, 3:4, 4:3, 9:16, 16:9",
+    "prompt_enhancement": "Advanced LLM-based prompt rewriting",
+    "text_rendering": "Best-in-class typography and text generation",
+    "watermarking": "Non-visible SynthID watermark included",
+    "safety": "Built-in safety filtering and moderation",
+    "precision": "Designed for outputs that precisely follow instructions"
+  },
+  "best_practices": [
+    "Use for highest quality requirements where cost is not primary concern",
+    "Ideal for professional graphics, marketing materials, and detailed artwork",
+    "Leverage superior prompt adherence for complex requirements",
+    "Best choice when text rendering quality is critical",
+    "Allow for longer generation times due to quality optimization"
+  ],
+  "examples": [
+    "generate_image(prompt='Ultra-realistic product photography of luxury watch with precise lighting', model='imagen-4-ultra', quality='high')",
+    "generate_image(prompt='Professional poster design with text \"Innovation Summit 2025\" in modern typography', model='imagen-4-ultra')"
+  ]
+}

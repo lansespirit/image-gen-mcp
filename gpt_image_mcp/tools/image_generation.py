@@ -4,12 +4,15 @@ import base64
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from ..config.settings import Settings
 from ..storage.manager import ImageStorageManager
 from ..utils.cache import CacheManager
-from ..utils.openai_client import OpenAIClientManager
+from ..providers.registry import ProviderRegistry
+from ..providers.base import ProviderError, ProviderConfig
+from ..providers.openai import OpenAIProvider
+from ..providers.gemini import GeminiProvider
 from ..utils.path_utils import build_image_url_path
 from ..types.enums import (
     ImageQuality,
@@ -24,19 +27,78 @@ logger = logging.getLogger(__name__)
 
 
 class ImageGenerationTool:
-    """Tool for generating images using OpenAI's gpt-image-1 model."""
+    """Tool for generating images using multiple LLM providers."""
     
     def __init__(
         self,
-        openai_client: OpenAIClientManager,
         storage_manager: ImageStorageManager,
         cache_manager: CacheManager,
         settings: Settings,
     ):
-        self.openai_client = openai_client
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager
         self.settings = settings
+        self.provider_registry = ProviderRegistry()
+        self._initialize_providers()
+    
+    def _initialize_providers(self) -> None:
+        """Initialize and register all available providers."""
+        
+        # Initialize OpenAI provider
+        if self.settings.providers.openai.enabled and self.settings.providers.openai.api_key:
+            try:
+                openai_config = ProviderConfig(
+                    api_key=self.settings.providers.openai.api_key,
+                    organization=self.settings.providers.openai.organization,
+                    base_url=self.settings.providers.openai.base_url,
+                    timeout=self.settings.providers.openai.timeout,
+                    max_retries=self.settings.providers.openai.max_retries,
+                    enabled=self.settings.providers.openai.enabled,
+                )
+                openai_provider = OpenAIProvider(openai_config)
+                
+                # Register provider asynchronously - we'll handle this later
+                self._register_provider_async(openai_provider)
+                logger.info("OpenAI provider initialized successfully")
+                
+            except Exception as e:
+                logger.error(f"Failed to initialize OpenAI provider: {e}")
+        
+        # Initialize Gemini provider
+        if self.settings.providers.gemini.enabled and self.settings.providers.gemini.api_key:
+            try:
+                gemini_config = ProviderConfig(
+                    api_key=self.settings.providers.gemini.api_key,
+                    base_url=self.settings.providers.gemini.base_url,
+                    timeout=self.settings.providers.gemini.timeout,
+                    max_retries=self.settings.providers.gemini.max_retries,
+                    enabled=self.settings.providers.gemini.enabled,
+                )
+                gemini_provider = GeminiProvider(gemini_config)
+                
+                # Register provider asynchronously - we'll handle this later
+                self._register_provider_async(gemini_provider)
+                logger.info("Gemini provider initialized successfully")
+                
+            except Exception as e:
+                logger.error(f"Failed to initialize Gemini provider: {e}")
+    
+    def _register_provider_async(self, provider) -> None:
+        """Store provider for async registration later."""
+        if not hasattr(self, '_pending_providers'):
+            self._pending_providers = []
+        self._pending_providers.append(provider)
+    
+    async def _ensure_providers_registered(self) -> None:
+        """Ensure all providers are registered."""
+        if hasattr(self, '_pending_providers'):
+            for provider in self._pending_providers:
+                try:
+                    await self.provider_registry.register_provider(provider)
+                except Exception as e:
+                    logger.error(f"Failed to register provider {provider.name}: {e}")
+            # Clear pending providers after registration
+            self._pending_providers = []
     
     def _get_transport_type(self) -> str:
         """Detect the current transport type from environment or default to stdio."""
@@ -70,9 +132,29 @@ class ImageGenerationTool:
             )
             return f"file://{image_path.absolute()}"
     
+    def _get_default_model(self) -> str:
+        """Get the default model based on configuration and available providers."""
+        # First try the configured default model
+        configured_default = self.settings.images.default_model
+        
+        # Check if the configured default is available
+        if self.provider_registry.is_model_supported(configured_default):
+            return configured_default
+        
+        # If configured default is not available, try to find any available model
+        available_models = self.provider_registry.get_supported_models()
+        if available_models:
+            # Return the first available model
+            return next(iter(available_models))
+        
+        # If no models are available, return the configured default anyway
+        # This will cause a proper error message later
+        return configured_default
+    
     async def generate(
         self,
         prompt: str,
+        model: Optional[str] = None,
         quality: ImageQuality | str = ImageQuality.AUTO,
         size: ImageSize | str = ImageSize.LANDSCAPE,
         style: ImageStyle | str = ImageStyle.VIVID,
@@ -81,10 +163,12 @@ class ImageGenerationTool:
         compression: int = 100,
         background: BackgroundType | str = BackgroundType.AUTO,
     ) -> Dict[str, Any]:
-        """Generate an image from a text prompt."""
+        """Generate an image from a text prompt using the specified or default model."""
+        
+        # Ensure providers are registered
+        await self._ensure_providers_registered()
         
         # Convert enums to string values for API calls
-        # The parameters already come validated from server.py
         quality_str = quality.value if isinstance(quality, ImageQuality) else str(quality)
         size_str = size.value if isinstance(size, ImageSize) else str(size)
         style_str = style.value if isinstance(style, ImageStyle) else str(style)
@@ -92,11 +176,33 @@ class ImageGenerationTool:
         output_format_str = output_format.value if isinstance(output_format, OutputFormat) else str(output_format)
         background_str = background.value if isinstance(background, BackgroundType) else str(background)
         
+        # Determine which model to use
+        target_model = model or self._get_default_model()
+        
+        # Get the provider for this model
+        provider = self.provider_registry.get_provider_for_model(target_model)
+        if not provider:
+            available_models = list(self.provider_registry.get_supported_models())
+            if not available_models:
+                raise RuntimeError(
+                    f"No providers are available. Please ensure you have configured at least one provider with a valid API key. "
+                    f"Set OPENAI_API_KEY for OpenAI or GEMINI_API_KEY for Gemini."
+                )
+            else:
+                raise RuntimeError(
+                    f"No provider found for model '{target_model}'. "
+                    f"Available models: {available_models}. "
+                    f"Use list_available_models() to see detailed information."
+                )
+        
+        if not provider.is_available():
+            raise RuntimeError(f"Provider '{provider.name}' for model '{target_model}' is not available or misconfigured")
+        
         # Generate task ID for tracking
         task_id = str(uuid.uuid4())
         
-        # Check cache first
-        cache_params = {
+        # Build parameters for caching and validation
+        params = {
             "prompt": prompt,
             "quality": quality_str,
             "size": size_str,
@@ -105,111 +211,100 @@ class ImageGenerationTool:
             "output_format": output_format_str,
             "compression": compression,
             "background": background_str,
-            "model": self.settings.images.default_model,
+            "model": target_model,
         }
         
-        cached_result = await self.cache_manager.get_image_generation(**cache_params)
+        # Check cache first
+        cached_result = await self.cache_manager.get_image_generation(**params)
         if cached_result:
             logger.info(f"Returning cached result for prompt: {prompt[:50]}...")
             return cached_result
         
         try:
-            # Generate image using OpenAI API
-            logger.info(f"Generating image for task {task_id}")
-            response = await self.openai_client.generate_image(
+            # Validate parameters for the specific model
+            validated_params = self.provider_registry.validate_model_request(target_model, params)
+            
+            # Generate image using the provider
+            logger.info(f"Generating image for task {task_id} using model {target_model} via {provider.name}")
+            
+            provider_response = await provider.generate_image(
+                model=target_model,
                 prompt=prompt,
-                model=self.settings.images.default_model,
-                quality=quality_str,
-                size=size_str,
-                style=style_str,
-                moderation=moderation_str,
-                output_format=output_format_str,
-                compression=compression,
-                background=background_str,
+                quality=validated_params.get("quality", quality_str),
+                size=validated_params.get("size", size_str),
+                style=validated_params.get("style", style_str),
+                moderation=validated_params.get("moderation", moderation_str),
+                output_format=validated_params.get("output_format", output_format_str),
+                compression=validated_params.get("compression", compression),
+                background=validated_params.get("background", background_str),
                 n=1,
             )
             
-            # Process the first (and only) image
-            image_data = response.data[0]
-            
-            # Decode base64 image data
-            image_bytes = base64.b64decode(image_data.b64_json)
-            
             # Estimate cost
-            cost_info = self.openai_client.estimate_cost(prompt, 1)
-            
-            # Add actual usage if available
-            if hasattr(response, 'usage') and response.usage:
-                cost_info.update({
-                    "actual_usage": {
-                        "total_tokens": response.usage.total_tokens,
-                        "input_tokens": response.usage.input_tokens,
-                        "output_tokens": response.usage.output_tokens,
-                    }
-                })
+            cost_info = provider.estimate_cost(target_model, prompt, 1)
             
             # Prepare metadata
             metadata = {
                 "task_id": task_id,
                 "prompt": prompt,
-                "parameters": {
-                    "model": self.settings.images.default_model,
-                    "quality": quality_str,
-                    "size": size_str,
-                    "style": style_str,
-                    "moderation": moderation_str,
-                    "output_format": output_format_str,
-                    "compression": compression,
-                    "background": background_str,
-                },
+                "model": target_model,
+                "provider": provider.name,
+                "parameters": validated_params,
                 "cost_info": cost_info,
-                "api_response": {
-                    "created": getattr(response, 'created', None),
-                    "size": getattr(response, 'size', size_str),
-                    "quality": getattr(response, 'quality', quality_str),
-                    "output_format": getattr(response, 'output_format', output_format_str),
-                    "background": getattr(response, 'background', background_str),
-                }
+                "provider_metadata": provider_response.metadata,
             }
             
             # Save to local storage
             image_id, image_path = await self.storage_manager.save_image(
-                image_data=image_bytes,
+                image_data=provider_response.image_data,
                 metadata=metadata,
-                file_format=output_format_str
+                file_format=validated_params.get("output_format", output_format_str)
             )
             
             # Build image URL instead of base64 data
-            image_url = self._build_image_url(image_id, output_format_str)
+            image_url = self._build_image_url(image_id, validated_params.get("output_format", output_format_str))
             
             # Prepare result
             result = {
                 "task_id": task_id,
                 "image_id": image_id,
-                "image_url": image_url,  # URL instead of base64 data
+                "image_url": image_url,
                 "resource_uri": f"generated-images://{image_id}",
                 "metadata": {
-                    "size": size_str,
-                    "quality": quality_str,
-                    "style": style_str,
-                    "moderation": moderation_str,
-                    "output_format": output_format_str,
-                    "background": background_str,
+                    "model": target_model,
+                    "provider": provider.name,
+                    "size": validated_params.get("size", size_str),
+                    "quality": validated_params.get("quality", quality_str),
+                    "style": validated_params.get("style", style_str),
+                    "moderation": validated_params.get("moderation", moderation_str),
+                    "output_format": validated_params.get("output_format", output_format_str),
+                    "background": validated_params.get("background", background_str),
                     "prompt": prompt,
                     "created_at": metadata.get("created_at"),
                     "cost_estimate": cost_info.get("estimated_cost_usd"),
-                    "file_size_bytes": len(image_bytes),
-                    "dimensions": size_str,
-                    "format": output_format_str.upper(),
+                    "file_size_bytes": len(provider_response.image_data),
+                    "dimensions": validated_params.get("size", size_str),
+                    "format": validated_params.get("output_format", output_format_str).upper(),
                 }
             }
             
-            # Cache the result with URL
-            await self.cache_manager.set_image_generation(result, **cache_params)
+            # Cache the result
+            await self.cache_manager.set_image_generation(result, **params)
             
-            logger.info(f"Successfully generated image {image_id} for task {task_id}")
+            logger.info(f"Successfully generated image {image_id} for task {task_id} using {provider.name}")
             return result
             
+        except ProviderError as e:
+            logger.error(f"Provider error for task {task_id}: {e}")
+            raise RuntimeError(f"Image generation failed: {str(e)}")
         except Exception as e:
             logger.error(f"Error generating image for task {task_id}: {e}")
             raise RuntimeError(f"Image generation failed: {str(e)}")
+    
+    def get_supported_models(self) -> Dict[str, Any]:
+        """Get information about all supported models."""
+        return self.provider_registry.get_registry_stats()
+    
+    def get_available_providers(self) -> List[str]:
+        """Get list of available provider names."""
+        return [provider.name for provider in self.provider_registry.get_available_providers()]

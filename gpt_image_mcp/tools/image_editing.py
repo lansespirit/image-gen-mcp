@@ -15,16 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 class ImageEditingTool:
-    """Tool for editing images using OpenAI's gpt-image-1 model."""
+    """Tool for editing images using multiple LLM providers."""
     
     def __init__(
         self,
-        openai_client: OpenAIClientManager,
         storage_manager: ImageStorageManager,
         cache_manager: CacheManager,
         settings: Settings,
     ):
-        self.openai_client = openai_client
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager
         self.settings = settings

@@ -1,7 +1,7 @@
 """Configuration settings for the GPT Image MCP Server."""
 
 from pathlib import Path
-from typing import Literal
+from typing import List, Literal
 from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,11 +9,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class OpenAISettings(BaseModel):
     """OpenAI API configuration."""
     
-    api_key: str = Field(..., description="OpenAI API key")
+    api_key: str = Field("", description="OpenAI API key")
     organization: str | None = Field(None, description="OpenAI organization ID")
     base_url: str = Field("https://api.openai.com/v1", description="OpenAI API base URL")
     timeout: float = Field(300.0, description="Request timeout in seconds")
     max_retries: int = Field(3, description="Maximum number of retries")
+    enabled: bool = Field(True, description="Enable OpenAI provider")
 
     @field_validator('base_url')
     @classmethod
@@ -21,6 +22,54 @@ class OpenAISettings(BaseModel):
         if not v.startswith(('http://', 'https://')):
             raise ValueError('Base URL must start with http:// or https://')
         return v.rstrip('/')
+
+
+class GeminiSettings(BaseModel):
+    """Gemini API configuration."""
+    
+    api_key: str = Field("", description="Gemini API key")
+    base_url: str = Field("https://generativelanguage.googleapis.com/v1beta/", description="Gemini API base URL")
+    timeout: float = Field(300.0, description="Request timeout in seconds")
+    max_retries: int = Field(3, description="Maximum number of retries")
+    enabled: bool = Field(False, description="Enable Gemini provider")
+    default_model: str = Field("imagen-4", description="Default Gemini model")
+
+    @field_validator('base_url')
+    @classmethod
+    def validate_base_url(cls, v):
+        if not v.startswith(('http://', 'https://')):
+            raise ValueError('Base URL must start with http:// or https://')
+        return v.rstrip('/')
+
+
+class ProvidersSettings(BaseModel):
+    """Multi-provider configuration."""
+    
+    openai: OpenAISettings = Field(default_factory=OpenAISettings)
+    gemini: GeminiSettings = Field(default_factory=GeminiSettings)
+    enabled_providers: List[str] = Field([], description="List of enabled providers")
+    default_provider: str = Field("", description="Default provider for image generation")
+    
+    @model_validator(mode='after')
+    def validate_providers_config(self):
+        # Auto-enable providers based on configuration
+        if self.openai.api_key and self.openai.enabled:
+            if "openai" not in self.enabled_providers:
+                self.enabled_providers.append("openai")
+                
+        if self.gemini.api_key and self.gemini.enabled:
+            if "gemini" not in self.enabled_providers:
+                self.enabled_providers.append("gemini")
+        
+        # Set default provider if not specified
+        if not self.default_provider and self.enabled_providers:
+            self.default_provider = self.enabled_providers[0]
+        
+        # Validate that default provider is in enabled providers (if both are set)
+        if self.default_provider and self.default_provider not in self.enabled_providers:
+            raise ValueError(f"Default provider '{self.default_provider}' must be in enabled providers")
+        
+        return self
 
 
 class ImageSettings(BaseModel):
@@ -108,8 +157,14 @@ class Settings(BaseSettings):
     )
     
     # Nested settings with proper defaults
-    openai: OpenAISettings = Field(default_factory=OpenAISettings)
+    providers: ProvidersSettings = Field(default_factory=ProvidersSettings)
     images: ImageSettings = Field(default_factory=ImageSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
     server: ServerSettings = Field(default_factory=ServerSettings)
+    
+    # Backward compatibility property
+    @property
+    def openai(self) -> OpenAISettings:
+        """Backward compatibility access to OpenAI settings."""
+        return self.providers.openai

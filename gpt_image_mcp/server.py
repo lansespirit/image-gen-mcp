@@ -23,7 +23,6 @@ from .resources.image_resources import ImageResourceManager
 from .resources.model_registry import model_registry
 from .resources.prompt_templates import prompt_template_resource_manager
 from .prompts.template_manager import template_manager
-from .utils.openai_client import OpenAIClientManager
 from .utils.cache import CacheManager
 from .utils.validators import (
     validate_image_quality,
@@ -50,7 +49,6 @@ class ServerContext:
     """Server context containing initialized services."""
     settings: Settings
     storage_manager: ImageStorageManager
-    openai_client: OpenAIClientManager
     cache_manager: CacheManager
     image_generation_tool: ImageGenerationTool
     image_editing_tool: ImageEditingTool
@@ -191,19 +189,16 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[ServerContext]:
     
     # Initialize services with dependency injection
     storage_manager = ImageStorageManager(settings.storage)
-    openai_client = OpenAIClientManager(settings.openai)
     cache_manager = CacheManager(settings.cache)
     
     # Initialize tools and resources
     image_generation_tool = ImageGenerationTool(
-        openai_client=openai_client,
         storage_manager=storage_manager,
         cache_manager=cache_manager,
         settings=settings,
     )
     
     image_editing_tool = ImageEditingTool(
-        openai_client=openai_client,
         storage_manager=storage_manager,
         cache_manager=cache_manager,
         settings=settings,
@@ -230,7 +225,6 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[ServerContext]:
         yield ServerContext(
             settings=settings,
             storage_manager=storage_manager,
-            openai_client=openai_client,
             cache_manager=cache_manager,
             image_generation_tool=image_generation_tool,
             image_editing_tool=image_editing_tool,
@@ -443,7 +437,7 @@ async def server_info() -> dict[str, Any]:
 
 @mcp.tool(
     title="Generate Image",
-    description="Generate images using OpenAI's gpt-image-1 model from text descriptions"
+    description="Generate images using multiple AI models from text descriptions. Use list_available_models first to see which models are currently available."
 )
 async def generate_image(
     prompt: str = Field(
@@ -451,6 +445,10 @@ async def generate_image(
         description="The best practices for image generation prompt is to be highly specific and detailed about the subject, setting, style, mood, and visual elements you want, while using clear, unambiguous language to guide the AI's creative interpretation.",
         min_length=1,
         max_length=4000
+    ),
+    model: Optional[str] = Field(
+        default=None,
+        description="AI model to use for image generation. Available models depend on configured providers. If not specified, uses the configured default model."
     ),
     quality: Optional[str] = Field(
         default="auto",
@@ -462,11 +460,11 @@ async def generate_image(
     ),
     style: Optional[str] = Field(
         default="vivid",
-        description="Image style: vivid or natural"
+        description="Image style: vivid or natural (OpenAI models only)"
     ),
     moderation: Optional[str] = Field(
         default="auto",
-        description="Content moderation level: auto or low"
+        description="Content moderation level: auto or low (OpenAI models only)"
     ),
     output_format: Optional[str] = Field(
         default="png",
@@ -480,11 +478,16 @@ async def generate_image(
     ),
     background: Optional[str] = Field(
         default="auto",
-        description="Background type: auto, transparent, opaque"
+        description="Background type: auto, transparent, opaque (OpenAI models only)"
     ),
 ) -> dict[str, Any]:
     """
-    Generate an image from a text prompt using gpt-image-1.
+    Generate an image from a text prompt using multiple AI providers.
+    
+    RECOMMENDED WORKFLOW:
+    1. First call list_available_models() to see which models are available
+    2. Choose an appropriate model based on your needs and cost considerations
+    3. Call this function with the chosen model
     
     Returns a dictionary containing:
     - task_id: Unique identifier for this generation task
@@ -494,7 +497,7 @@ async def generate_image(
       * HTTP transport: http:// URL to MCP server endpoint
       * With base_host: full CDN/nginx URL with date path structure
     - resource_uri: MCP resource URI for future access
-    - metadata: Generation details and parameters
+    - metadata: Generation details and parameters including model and provider info
     """
     ctx = mcp.get_context()
     server_ctx = get_server_context(ctx)
@@ -512,6 +515,7 @@ async def generate_image(
     try:
         result = await server_ctx.image_generation_tool.generate(
             prompt=validated_prompt,
+            model=model,  # Pass the model parameter
             quality=validated_quality,
             size=validated_size,
             style=validated_style,
@@ -610,6 +614,70 @@ async def edit_image(
     except Exception as e:
         logger.error(f"Image editing failed: {e}", exc_info=True)
         raise
+
+
+@mcp.tool(
+    title="List Available Models",
+    description="Get information about all available image generation models and their capabilities"
+)
+async def list_available_models() -> dict[str, Any]:
+    """
+    List all available image generation models with their capabilities.
+    
+    Returns information about:
+    - Available models by provider
+    - Model capabilities (sizes, qualities, formats)
+    - Provider status and configuration
+    - Cost estimates and features
+    """
+    ctx = mcp.get_context()
+    server_ctx = get_server_context(ctx)
+    
+    try:
+        # Ensure providers are registered
+        await server_ctx.image_generation_tool._ensure_providers_registered()
+        
+        # Get registry statistics
+        registry_stats = server_ctx.image_generation_tool.get_supported_models()
+        
+        # Get detailed model information
+        supported_models = server_ctx.image_generation_tool.provider_registry.get_supported_models()
+        model_details = {}
+        
+        for model_id in supported_models:
+            model_info = server_ctx.image_generation_tool.provider_registry.get_model_info(model_id)
+            if model_info:
+                provider = server_ctx.image_generation_tool.provider_registry.get_provider_for_model(model_id)
+                cost_estimate = provider.estimate_cost(model_id, "sample prompt", 1) if provider else {}
+                
+                model_details[model_id] = {
+                    "provider": model_info["provider"],
+                    "available": model_info["is_available"],
+                    "capabilities": {
+                        "sizes": model_info["capabilities"].supported_sizes,
+                        "qualities": model_info["capabilities"].supported_qualities,
+                        "formats": model_info["capabilities"].supported_formats,
+                        "max_images": model_info["capabilities"].max_images_per_request,
+                        "supports_style": model_info["capabilities"].supports_style,
+                        "supports_background": model_info["capabilities"].supports_background,
+                    },
+                    "cost_estimate": cost_estimate.get("estimated_cost_usd", 0),
+                    "features": model_info["capabilities"].custom_parameters,
+                }
+        
+        return {
+            "summary": registry_stats,
+            "models": model_details,
+            "default_model": server_ctx.settings.images.default_model,
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to list available models: {e}", exc_info=True)
+        return {
+            "error": str(e),
+            "summary": {"total_providers": 0, "available_providers": 0, "total_models": 0},
+            "models": {},
+        }
 
 
 @mcp.resource(
