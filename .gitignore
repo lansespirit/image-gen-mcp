@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+.pytest_cache/
+.mypy_cache/
+.coverage
+.cache/
+*.log
