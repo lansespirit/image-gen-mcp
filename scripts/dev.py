@@ -2,7 +2,6 @@
 """Development script for the Image Gen MCP Server."""
 
 import argparse
-import asyncio
 import os
 import subprocess
 import sys
@@ -12,7 +11,7 @@ from pathlib import Path
 def setup_env():
     """Set up development environment."""
     print("🔧 Setting up development environment...")
-    
+
     # Create .env file if it doesn't exist
     env_file = Path(".env")
     if not env_file.exists():
@@ -24,7 +23,7 @@ def setup_env():
         else:
             env_file.write_text("OPENAI_API_KEY=your-api-key-here\n")
             print("✅ Created basic .env file. Please add your OpenAI API key.")
-    
+
     # Create storage directories
     storage_path = Path("storage")
     storage_path.mkdir(exist_ok=True)
@@ -34,19 +33,15 @@ def setup_env():
     print("✅ Created storage directories")
 
 
-def run_tests():
+def run_tests(extra_args=None):
     """Run the test suite."""
     print("🧪 Running tests...")
+    if extra_args is None:
+        extra_args = []
     try:
-        result = subprocess.run(
-            ["uv", "run", "pytest", "tests/", "-v"],
-            check=False,
-            capture_output=True,
-            text=True
-        )
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
+        # Add progress indicator by default and show output in real-time
+        cmd = ["uv", "run", "pytest", "tests/", "-v", "--tb=short"] + extra_args
+        result = subprocess.run(cmd, check=False)
         return result.returncode == 0
     except FileNotFoundError:
         print("❌ pytest not found. Install with: uv add --dev pytest")
@@ -56,17 +51,16 @@ def run_tests():
 def run_server():
     """Run the MCP server in development mode."""
     print("🚀 Starting Image Gen MCP Server...")
-    
+
     # Check for OpenAI API key
     if not os.getenv("OPENAI_API_KEY"):
         print("❌ OPENAI_API_KEY environment variable not set")
         print("   Please set it in your .env file or environment")
         return False
-    
+
     try:
         subprocess.run(
-            ["uv", "run", "python", "-m", "gpt_image_mcp.server"],
-            check=True
+            ["uv", "run", "python", "-m", "gpt_image_mcp.server"], check=True
         )
         return True
     except KeyboardInterrupt:
@@ -80,17 +74,14 @@ def run_server():
 def run_example():
     """Run the basic usage example."""
     print("📖 Running basic usage example...")
-    
+
     if not os.getenv("OPENAI_API_KEY"):
         print("❌ OPENAI_API_KEY environment variable not set")
         print("   Please set it in your .env file or environment")
         return False
-    
+
     try:
-        subprocess.run(
-            ["uv", "run", "python", "examples/basic_usage.py"],
-            check=True
-        )
+        subprocess.run(["uv", "run", "python", "examples/basic_usage.py"], check=True)
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Example failed: {e}")
@@ -100,25 +91,25 @@ def run_example():
 def lint_code():
     """Run code linting."""
     print("🔍 Running code linting...")
-    
+
     # Run ruff
     try:
         result = subprocess.run(
             ["uv", "run", "ruff", "check", "gpt_image_mcp/"],
             check=False,
             capture_output=True,
-            text=True
+            text=True,
         )
         if result.stdout:
             print(result.stdout)
         if result.stderr:
             print(result.stderr)
-        
+
         if result.returncode == 0:
             print("✅ No linting issues found")
         else:
             print(f"⚠️  Found {result.returncode} linting issues")
-        
+
         return result.returncode == 0
     except FileNotFoundError:
         print("❌ ruff not found. Install with: uv add --dev ruff")
@@ -128,11 +119,10 @@ def lint_code():
 def format_code():
     """Format code with black."""
     print("🎨 Formatting code...")
-    
+
     try:
         subprocess.run(
-            ["uv", "run", "black", "gpt_image_mcp/", "tests/", "examples/"],
-            check=True
+            ["uv", "run", "black", "gpt_image_mcp/", "tests/", "examples/"], check=True
         )
         print("✅ Code formatted successfully")
         return True
@@ -147,22 +137,19 @@ def format_code():
 def check_dependencies():
     """Check if all dependencies are installed."""
     print("📦 Checking dependencies...")
-    
+
     try:
         result = subprocess.run(
-            ["uv", "pip", "check"],
-            check=False,
-            capture_output=True,
-            text=True
+            ["uv", "pip", "check"], check=False, capture_output=True, text=True
         )
-        
+
         if result.returncode == 0:
             print("✅ All dependencies are satisfied")
         else:
             print("❌ Dependency issues found:")
             print(result.stdout)
             print(result.stderr)
-        
+
         return result.returncode == 0
     except FileNotFoundError:
         print("❌ uv not found. Please install uv first")
@@ -171,38 +158,45 @@ def check_dependencies():
 
 def main():
     """Main development script."""
-    parser = argparse.ArgumentParser(description="Image Gen MCP Server Development Tools")
+    parser = argparse.ArgumentParser(
+        description="Image Gen MCP Server Development Tools"
+    )
     parser.add_argument(
         "command",
         choices=["setup", "test", "server", "example", "lint", "format", "check"],
-        help="Command to run"
+        help="Command to run",
     )
-    
+    parser.add_argument(
+        "extra_args",
+        nargs=argparse.REMAINDER,
+        help="Extra arguments to pass to the underlying tool",
+    )
+
     args = parser.parse_args()
-    
+
     if args.command == "setup":
         success = True
         success &= check_dependencies()
         setup_env()
-        
+
     elif args.command == "test":
-        success = run_tests()
-        
+        success = run_tests(args.extra_args)
+
     elif args.command == "server":
         success = run_server()
-        
+
     elif args.command == "example":
         success = run_example()
-        
+
     elif args.command == "lint":
         success = lint_code()
-        
+
     elif args.command == "format":
         success = format_code()
-        
+
     elif args.command == "check":
         success = check_dependencies()
-    
+
     sys.exit(0 if success else 1)
 
 
