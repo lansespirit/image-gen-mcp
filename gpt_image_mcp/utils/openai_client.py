@@ -13,21 +13,17 @@ from ..config.settings import OpenAISettings
 logger = logging.getLogger(__name__)
 
 
-# Dummy OpenAI class for patching in tests
-class OpenAI:
-    pass
-
 
 class OpenAIClientManager:
-    @property
-    def client(self):
-        return self._client
-
     """Manages OpenAI API client with retry logic and error handling."""
 
     def __init__(self, settings: OpenAISettings):
         self.settings = settings
         self._client = self._create_client()
+
+    @property
+    def client(self):
+        return self._client
 
     def _create_client(self):
         return AsyncOpenAI(

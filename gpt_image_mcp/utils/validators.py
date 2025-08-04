@@ -300,6 +300,31 @@ def sanitize_prompt(prompt: str) -> str:
     return prompt
 
 
+def _detect_image_format(image_bytes: bytes) -> str:
+    """Detect image format from byte data.
+
+    Args:
+        image_bytes: Raw image data
+
+    Returns:
+        MIME type string (e.g., 'image/png', 'image/jpeg')
+    """
+    # Check for common image format signatures
+    if image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+        return 'image/png'
+    elif image_bytes.startswith(b'\xff\xd8\xff'):
+        return 'image/jpeg'
+    elif image_bytes.startswith(b'RIFF') and b'WEBP' in image_bytes[:12]:
+        return 'image/webp'
+    elif image_bytes.startswith(b'GIF'):
+        return 'image/gif'
+    elif image_bytes.startswith(b'BM'):
+        return 'image/bmp'
+    else:
+        # Default to PNG if format cannot be determined
+        return 'image/png'
+
+
 def validate_base64_image(data: str) -> str:
     """
     Validate base64 image data.
@@ -313,7 +338,7 @@ def validate_base64_image(data: str) -> str:
     Raises:
         ValueError: If data is invalid
     """
-    if not data or not isinstance(data, str) or not data.strip():
+    if not isinstance(data, str) or not data.strip():
         raise ValueError("Image data must be a non-empty string")
 
     import base64
@@ -328,7 +353,8 @@ def validate_base64_image(data: str) -> str:
             raise ValueError("Invalid data URL")
     # If raw base64, validate and return as data URL
     try:
-        base64.b64decode(data, validate=True)
-        return f"data:image/png;base64,{data}"
+        image_bytes = base64.b64decode(data, validate=True)
+        mime_type = _detect_image_format(image_bytes)
+        return f"data:{mime_type};base64,{data}"
     except Exception as e:
         raise ValueError(f"Invalid base64 image data: {e}")

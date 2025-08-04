@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from gpt_image_mcp.config.settings import ProvidersSettings, Settings
 from gpt_image_mcp.providers.base import ProviderError
 from gpt_image_mcp.tools.image_editing import ImageEditingTool
 from gpt_image_mcp.tools.image_generation import ImageGenerationTool
@@ -28,9 +29,9 @@ def mock_editing_tool(storage_manager, cache_manager, mock_settings):
         cache_manager=cache_manager,
         settings=mock_settings,
     )
-    # Mock the OpenAI client with a mix of sync and async methods
+    # Mock the OpenAI client manager (which has edit_image method)
     tool.openai_client = MagicMock()
-    tool.openai_client.edit_image = AsyncMock()  # This method is async
+    tool.openai_client.edit_image = AsyncMock()  # OpenAIClientManager method
     tool.openai_client.estimate_cost = MagicMock(
         return_value={"estimated_cost_usd": 0.01}
     )  # This is sync
@@ -363,6 +364,45 @@ class TestImageGenerationTool:
         assert result["image_id"] == "stored_id"
         storage_manager.save_image.assert_called_once()
 
+    def test_works_with_disabled_providers(
+        self, storage_manager, cache_manager, mock_openai_settings
+    ):
+        """Test that ImageGenerationTool works with some providers disabled."""
+        # Create settings with only OpenAI provider enabled
+        settings = Settings()
+        settings.providers = ProvidersSettings()
+        settings.providers.openai = mock_openai_settings
+        # Gemini provider is None/missing - this should be fine
+
+        # This should NOT raise an error - tool should work with just OpenAI
+        tool = ImageGenerationTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=settings
+        )
+        assert tool is not None
+
+    def test_missing_all_providers_configuration(
+        self, storage_manager, cache_manager
+    ):
+        """Test that missing all provider configurations works.
+
+        When no providers are enabled, tool creation should succeed.
+        """
+        # Create settings with no enabled providers
+        settings = Settings()
+        settings.providers = ProvidersSettings()
+        # Both providers are None or disabled
+
+        # This should NOT raise an error during initialization
+        # The error should only occur when trying to generate images
+        tool = ImageGenerationTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=settings
+        )
+        assert tool is not None  # Tool creation should succeed
+
 
 class TestImageEditingTool:
     """Unit tests for the ImageEditingTool."""
@@ -583,3 +623,20 @@ class TestImageEditingTool:
 
         assert result["image_id"] == "edited_id"
         storage_manager.save_image.assert_called_once()
+
+    def test_missing_openai_provider_configuration(
+        self, storage_manager, cache_manager
+    ):
+        """Test that missing OpenAI provider configuration raises proper error."""
+        # Create settings with missing OpenAI provider
+        settings = Settings()
+        settings.providers = ProvidersSettings()  # Empty providers (no openai)
+
+        with pytest.raises(
+            ValueError, match="OpenAI provider settings are required"
+        ):
+            ImageEditingTool(
+                storage_manager=storage_manager,
+                cache_manager=cache_manager,
+                settings=settings
+            )

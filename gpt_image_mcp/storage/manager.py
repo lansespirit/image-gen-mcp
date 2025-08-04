@@ -34,7 +34,17 @@ class ImageStorageManager:
     async def store_image(
         self, image_id: str, image_data: Any, metadata: dict[str, Any]
     ) -> None:
-        """Store image data (bytes or base64/data URL) and metadata."""
+        """Store image data with a provided image ID.
+        
+        This method is primarily used in tests where you need to control
+        the image ID. For production use, prefer save_image() which handles
+        ID generation and organized storage.
+        
+        Args:
+            image_id: The specific image ID to use
+            image_data: Image data as bytes or base64 data URL
+            metadata: Image metadata dictionary
+        """
         # Determine format
         fmt = metadata.get("format", "png").lower()
         if isinstance(image_data, str) and image_data.startswith("data:image/"):
@@ -178,18 +188,28 @@ class ImageStorageManager:
                 continue
         images.sort(key=lambda x: x.get("created_at", ""))  # oldest first
 
-        def get_size():
-            total = 0
-            for ext in ("png", "jpg", "jpeg", "webp"):
-                for img in self.images_path.rglob(f"*.{ext}"):
-                    total += img.stat().st_size
-            return total / (1024 * 1024 * 1024)
+        # Calculate initial total size in GB
+        total_size_bytes = 0
+        for ext in ("png", "jpg", "jpeg", "webp"):
+            for img in self.images_path.rglob(f"*.{ext}"):
+                total_size_bytes += img.stat().st_size
+        total_size_gb = total_size_bytes / (1024 * 1024 * 1024)
 
         cleaned = 0
-        while get_size() > max_size_gb and images:
+        while total_size_gb > max_size_gb and images:
             meta = images.pop(0)
             image_id = meta.get("image_id")
+            # Find the image file and get its size before deletion
+            image_file = None
+            for ext in ("png", "jpg", "jpeg", "webp"):
+                candidate = self.images_path / f"{image_id}.{ext}"
+                if candidate.exists():
+                    image_file = candidate
+                    break
+            image_size_bytes = image_file.stat().st_size if image_file else 0
             await self.delete_image(image_id)
+            # Subtract the deleted file size from total
+            total_size_gb -= image_size_bytes / (1024 * 1024 * 1024)
             cleaned += 1
         return cleaned
 
@@ -230,7 +250,20 @@ class ImageStorageManager:
     async def save_image(
         self, image_data: bytes, metadata: dict[str, Any], file_format: str = "png"
     ) -> tuple[str, Path]:
-        """Save image data and metadata to storage."""
+        """Save image data to organized storage with auto-generated ID.
+        
+        This is the primary method for saving images in production. It generates
+        a unique image ID, uses date-organized directory structure, and includes
+        comprehensive metadata with file information and image dimensions.
+        
+        Args:
+            image_data: Raw image data as bytes
+            metadata: Image metadata dictionary
+            file_format: Image file format (png, jpeg, webp)
+            
+        Returns:
+            Tuple of (image_id, image_path)
+        """
         image_id = self.generate_image_id()
         image_path = self.get_image_path(image_id, file_format)
         metadata_path = self.get_metadata_path(image_id)

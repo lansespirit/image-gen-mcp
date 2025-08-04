@@ -5,6 +5,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Optional
 
+from ..config.settings import Settings
 from ..providers.base import ProviderConfig, ProviderError
 from ..providers.gemini import GeminiProvider
 from ..providers.openai import OpenAIProvider
@@ -31,24 +32,17 @@ class ImageGenerationTool:
         self,
         storage_manager: ImageStorageManager,
         cache_manager: CacheManager,
-        settings,
+        settings: Settings,
         openai_client=None,
     ):
-        # Accept either Settings or ImageSettings for test compatibility
-        if hasattr(settings, "providers") and hasattr(settings, "images"):
-            self.settings = settings
-        else:
-            # Wrap in dummy Settings
-            class DummySettings:
-                def __init__(self, images):
-                    self.images = images
-                    from types import SimpleNamespace
-
-                    self.providers = SimpleNamespace(openai=None, gemini=None)
-                    self.storage = SimpleNamespace(base_path="./storage")
-                    self.server = SimpleNamespace(host="127.0.0.1", port=3001)
-
-            self.settings = DummySettings(settings)
+        """
+        Args:
+            storage_manager: ImageStorageManager instance.
+            cache_manager: CacheManager instance.
+            settings: Settings instance (must have .providers, .images, etc.).
+            openai_client: Optional OpenAI client.
+        """
+        self.settings = settings
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager
         self.provider_registry = ProviderRegistry()
@@ -57,20 +51,9 @@ class ImageGenerationTool:
 
     def _initialize_providers(self) -> None:
         """Initialize and register all available providers."""
-        # Defensive: ensure openai and gemini are never None
-        if getattr(self.settings.providers, "openai", None) is None:
-            from gpt_image_mcp.config.settings import OpenAISettings
-
-            self.settings.providers.openai = OpenAISettings(api_key="test-api-key")
-        if getattr(self.settings.providers, "gemini", None) is None:
-            from gpt_image_mcp.config.settings import GeminiSettings
-
-            self.settings.providers.gemini = GeminiSettings(api_key="test-gemini-key")
         # Initialize OpenAI provider
-        if (
-            self.settings.providers.openai.enabled
-            and self.settings.providers.openai.api_key
-        ):
+        openai_provider = getattr(self.settings.providers, "openai", None)
+        if openai_provider and openai_provider.enabled and openai_provider.api_key:
             try:
                 openai_config = ProviderConfig(
                     api_key=self.settings.providers.openai.api_key,
@@ -89,10 +72,8 @@ class ImageGenerationTool:
                 logger.error(f"Failed to initialize OpenAI provider: {e}")
 
         # Initialize Gemini provider
-        if (
-            self.settings.providers.gemini.enabled
-            and self.settings.providers.gemini.api_key
-        ):
+        gemini_provider = getattr(self.settings.providers, "gemini", None)
+        if gemini_provider and gemini_provider.enabled and gemini_provider.api_key:
             try:
                 gemini_config = ProviderConfig(
                     api_key=self.settings.providers.gemini.api_key,
