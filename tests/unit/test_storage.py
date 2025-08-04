@@ -244,10 +244,13 @@ class TestImageStorageManager:
     async def test_storage_stats(self, storage_manager, sample_image_bytes):
         """Test storage statistics calculation."""
         # Store some images with larger data to get measurable size
+        from tests.conftest import create_larger_test_image
+        larger_image_bytes = create_larger_test_image(width=1000, height=1000)
+
         for i in range(3):
             await storage_manager.store_image(
                 f"stats_test_{i}",
-                sample_image_bytes * 1000,  # Make images larger for measurable size
+                larger_image_bytes,  # Use properly generated larger image
                 {"prompt": f"test image {i}"},
             )
 
@@ -295,7 +298,7 @@ class TestImageStorageManager:
         # Create a storage manager with very small size limit
         small_storage_settings = StorageSettings(
             base_path=str(storage_manager.base_path),
-            max_size_gb=0.0001,  # Even smaller limit (0.1 MB)
+            max_size_gb=0.000001,  # Very small limit (0.001 MB)
             retention_days=30,
         )
         small_manager = ImageStorageManager(small_storage_settings)
@@ -303,10 +306,13 @@ class TestImageStorageManager:
 
         try:
             # Store multiple images to exceed size limit
+            from tests.conftest import create_larger_test_image
+            larger_image_bytes = create_larger_test_image(width=500, height=500)
+
             for i in range(5):
                 await small_manager.store_image(
                     f"size_test_{i}",
-                    sample_image_bytes * 1000,  # Make images larger
+                    larger_image_bytes,  # Use properly generated larger image
                     {"prompt": f"size test {i}"},
                 )
 
@@ -327,7 +333,7 @@ class TestImageStorageManager:
         """Test background cleanup task functionality."""
         # Create manager with short cleanup interval for testing
         mock_storage_settings.cleanup_interval_hours = (
-            0.00001  # Very short interval (0.036 seconds)
+            0.001  # Short interval for testing (3.6 seconds)
         )
         manager = ImageStorageManager(mock_storage_settings)
 
@@ -481,3 +487,31 @@ class TestImageStorageManager:
 
         # Should be a valid ISO datetime
         datetime.fromisoformat(metadata["created_at"].replace("Z", "+00:00"))
+
+    def test_create_larger_test_image_function(self):
+        """Test that create_larger_test_image helper creates properly sized images."""
+        from tests.conftest import create_larger_test_image
+
+        # Test different sizes
+        small_image = create_larger_test_image(width=50, height=50)
+        medium_image = create_larger_test_image(width=200, height=200)
+        large_image = create_larger_test_image(width=1000, height=1000)
+
+        # Verify they are valid PNG images (start with PNG signature)
+        png_signature = b'\x89PNG\r\n\x1a\n'
+        assert small_image.startswith(png_signature)
+        assert medium_image.startswith(png_signature)
+        assert large_image.startswith(png_signature)
+
+        # Verify sizes increase as expected (larger images should be bigger files)
+        assert len(small_image) < len(medium_image) < len(large_image)
+
+        # Verify they're reasonably sized (not tiny like the original 1x1 pixel)
+        assert len(small_image) > 100  # Should be at least 100 bytes
+        assert len(medium_image) > 500  # Should be at least 500 bytes
+        assert len(large_image) > 2000  # Should be at least 2KB
+
+        # Test that the function produces consistent results
+        duplicate_image = create_larger_test_image(width=200, height=200)
+        # Same size parameters should produce same file size
+        assert len(duplicate_image) == len(medium_image)

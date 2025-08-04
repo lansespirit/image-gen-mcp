@@ -531,8 +531,10 @@ class TestOpenAIClientManager:
         assert hasattr(manager, "_client")
 
     @patch("gpt_image_mcp.utils.openai_client.AsyncOpenAI")
-    def test_openai_client_creation(self, mock_openai_class, mock_openai_settings):
-        """Test OpenAI client creation with proper settings."""
+    def test_async_openai_client_creation(
+        self, mock_openai_class, mock_openai_settings
+    ):
+        """Test AsyncOpenAI client creation with proper settings."""
         mock_client = MagicMock()
         mock_openai_class.return_value = mock_client
 

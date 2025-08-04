@@ -201,6 +201,36 @@ def sample_image_bytes():
     return base64.b64decode(b64_data)
 
 
+def create_larger_test_image(width: int = 100, height: int = 100) -> bytes:
+    """Create a larger valid PNG image for testing.
+
+    Args:
+        width: Image width in pixels
+        height: Image height in pixels
+
+    Returns:
+        PNG image data as bytes
+    """
+    from io import BytesIO
+
+    from PIL import Image
+
+    # Create a simple colored image with some pattern to increase file size
+    image = Image.new('RGB', (width, height), color='red')
+    
+    # Add some noise/pattern to increase file size
+    from PIL import ImageDraw
+    draw = ImageDraw.Draw(image)
+    for i in range(0, width, 10):
+        for j in range(0, height, 10):
+            draw.rectangle([i, j, i+5, j+5], fill='blue')
+
+    # Save to bytes
+    buffer = BytesIO()
+    image.save(buffer, format='PNG')
+    return buffer.getvalue()
+
+
 @pytest.fixture
 def event_loop():
     """Create an instance of the default event loop for the test session."""
