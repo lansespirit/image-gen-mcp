@@ -16,6 +16,13 @@ from gpt_image_mcp.types.enums import (
 from gpt_image_mcp.utils.cache import CacheManager, MemoryCache
 from gpt_image_mcp.utils.openai_client import OpenAIClientManager
 from gpt_image_mcp.utils.validators import (
+    BMP_SIGNATURE,
+    GIF_SIGNATURE,
+    JPEG_SIGNATURE,
+    PNG_SIGNATURE,
+    WEBP_RIFF_SIGNATURE,
+    WEBP_WEBP_SIGNATURE,
+    _detect_image_format,
     normalize_enum_value,
     sanitize_prompt,
     validate_background_type,
@@ -621,3 +628,54 @@ class TestOpenAIClientManager:
             max_retries=5,
             timeout=300.0,
         )
+
+
+class TestImageFormatDetection:
+    """Test image format detection using magic number signatures."""
+
+    def test_detect_png_format(self):
+        """Test PNG format detection."""
+        png_data = PNG_SIGNATURE + b"fake_png_data"
+        assert _detect_image_format(png_data) == 'image/png'
+
+    def test_detect_jpeg_format(self):
+        """Test JPEG format detection."""
+        jpeg_data = JPEG_SIGNATURE + b"fake_jpeg_data"
+        assert _detect_image_format(jpeg_data) == 'image/jpeg'
+
+    def test_detect_webp_format(self):
+        """Test WebP format detection with both RIFF and WEBP signatures."""
+        # WebP format requires both RIFF header and WEBP signature within first 12 bytes
+        webp_data = (WEBP_RIFF_SIGNATURE + b"XXXX" + WEBP_WEBP_SIGNATURE +
+                     b"fake_webp_data")
+        assert _detect_image_format(webp_data) == 'image/webp'
+
+    def test_detect_webp_format_missing_webp_signature(self):
+        """Test WebP format detection fails without WEBP signature."""
+        # Only RIFF header without WEBP signature should not detect as WebP
+        fake_riff_data = WEBP_RIFF_SIGNATURE + b"fake_data_no_webp"
+        assert _detect_image_format(fake_riff_data) != 'image/webp'
+
+    def test_detect_gif_format(self):
+        """Test GIF format detection."""
+        gif_data = GIF_SIGNATURE + b"fake_gif_data"
+        assert _detect_image_format(gif_data) == 'image/gif'
+
+    def test_detect_bmp_format(self):
+        """Test BMP format detection."""
+        bmp_data = BMP_SIGNATURE + b"fake_bmp_data"
+        assert _detect_image_format(bmp_data) == 'image/bmp'
+
+    def test_detect_unknown_format_defaults_to_png(self):
+        """Test that unknown formats default to PNG."""
+        unknown_data = b"unknown_signature_data"
+        assert _detect_image_format(unknown_data) == 'image/png'
+
+    def test_image_format_constants_are_bytes(self):
+        """Test that all image format constants are properly defined as bytes."""
+        constants = [PNG_SIGNATURE, JPEG_SIGNATURE, WEBP_RIFF_SIGNATURE,
+                    WEBP_WEBP_SIGNATURE, GIF_SIGNATURE, BMP_SIGNATURE]
+
+        for constant in constants:
+            assert isinstance(constant, bytes), f"Constant {constant} should be bytes"
+            assert len(constant) > 0, f"Constant {constant} should not be empty"
