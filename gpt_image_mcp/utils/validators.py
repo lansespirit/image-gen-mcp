@@ -317,10 +317,8 @@ def _is_webp_format(image_bytes: bytes) -> bool:
     Returns:
         True if the data is WebP format, False otherwise
     """
-    return (
-        image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
-        WEBP_WEBP_SIGNATURE in image_bytes[:12]
-    )
+    return (image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
+            WEBP_WEBP_SIGNATURE in image_bytes[:12])
 
 
 def _detect_image_format(image_bytes: bytes) -> str:

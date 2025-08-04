@@ -38,9 +38,17 @@ class ImageEditingTool:
 
     def _validate_openai_settings(self):
         """Ensure OpenAI provider settings are present (required for image editing)."""
-        if (not hasattr(self.settings, 'providers') or
-            not hasattr(self.settings.providers, 'openai') or
-            not self.settings.providers.openai):
+        self.validate_openai_provider_settings(self.settings)
+
+    @staticmethod
+    def validate_openai_provider_settings(settings):
+        """Validate that the OpenAI provider settings are present and correct."""
+        if not hasattr(settings, 'providers') or settings.providers is None:
+            raise ValueError(
+                "Settings must have a 'providers' attribute for image editing "
+                "functionality."
+            )
+        if not hasattr(settings.providers, 'openai') or not settings.providers.openai:
             raise ValueError(
                 "OpenAI provider settings are required for image editing "
                 "functionality. Please configure the 'providers.openai' section "
