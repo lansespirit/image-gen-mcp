@@ -32,10 +32,14 @@ class ImageEditingTool:
         """
         self.settings = settings
         # Ensure OpenAI provider settings are present (required for image editing)
-        openai_provider = getattr(self.settings.providers, "openai", None)
-        if not openai_provider:
+        if (not hasattr(self.settings, 'providers') or
+            not hasattr(self.settings.providers, 'openai') or
+            not self.settings.providers.openai):
             raise ValueError(
-                "OpenAI provider settings are required for image editing functionality."
+                "OpenAI provider settings are required for image editing "
+                "functionality. Please configure the 'providers.openai' section "
+                "in your settings with api_key, api_base, and other required "
+                "parameters."
             )
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager

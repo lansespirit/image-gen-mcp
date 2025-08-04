@@ -12,6 +12,14 @@ from ..types.enums import (
     OutputFormat,
 )
 
+# Image format magic number signatures
+PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+JPEG_SIGNATURE = b'\xff\xd8\xff'
+WEBP_RIFF_SIGNATURE = b'RIFF'
+WEBP_WEBP_SIGNATURE = b'WEBP'
+GIF_SIGNATURE = b'GIF'
+BMP_SIGNATURE = b'BM'
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -310,15 +318,16 @@ def _detect_image_format(image_bytes: bytes) -> str:
         MIME type string (e.g., 'image/png', 'image/jpeg')
     """
     # Check for common image format signatures
-    if image_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+    if image_bytes.startswith(PNG_SIGNATURE):
         return 'image/png'
-    elif image_bytes.startswith(b'\xff\xd8\xff'):
+    elif image_bytes.startswith(JPEG_SIGNATURE):
         return 'image/jpeg'
-    elif image_bytes.startswith(b'RIFF') and b'WEBP' in image_bytes[:12]:
+    elif (image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
+          WEBP_WEBP_SIGNATURE in image_bytes[:12]):
         return 'image/webp'
-    elif image_bytes.startswith(b'GIF'):
+    elif image_bytes.startswith(GIF_SIGNATURE):
         return 'image/gif'
-    elif image_bytes.startswith(b'BM'):
+    elif image_bytes.startswith(BMP_SIGNATURE):
         return 'image/bmp'
     else:
         # Default to PNG if format cannot be determined
