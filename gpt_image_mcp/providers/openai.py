@@ -29,12 +29,11 @@ class OpenAIProvider(LLMProvider):
             supported_qualities=["auto", "high", "medium", "low"],
             supported_formats=["png", "jpeg", "webp"],
             max_images_per_request=1,
-            supports_style=True,
+            supports_style=False,
             supports_background=True,
             supports_compression=True,
             custom_parameters={
                 "moderation": ["auto", "low"],
-                "style": ["vivid", "natural"],
                 "background": ["auto", "transparent", "opaque"],
             },
         )

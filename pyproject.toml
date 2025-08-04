@@ -1,5 +1,6 @@
 [tool.hatch.build.targets.wheel]
 packages = ["image-gen-mcp"]
+
 [project]
 name = "image-gen-mcp"
 version = "0.1.0"
@@ -14,6 +15,9 @@ dependencies = [
     "pydantic",
     "httpx",
     "aiofiles",
+    "aiohttp",
+    "google-auth",
+    "google-auth-oauthlib",
 ]
 
 [project.optional-dependencies]
@@ -64,4 +68,5 @@ testpaths = ["tests"]
 dev = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.0.0",
+    "ruff>=0.12.1",
 ]

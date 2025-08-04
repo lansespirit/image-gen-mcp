@@ -328,7 +328,7 @@ class TestCompleteSettings:
         """Test loading settings from environment file."""
         env_file = tmp_path / ".env"
         env_content = """
-OPENAI_API_KEY=test-env-key
+PROVIDERS__OPENAI__API_KEY=test-env-key
 OPENAI_BASE_URL=https://custom.api.com/v1
 SERVER_PORT=9000
 LOG_LEVEL=DEBUG
@@ -404,7 +404,7 @@ DEFAULT_QUALITY=high
         with patch.dict(
             os.environ,
             {
-                "OPENAI_API_KEY": "env-api-key",
+                "PROVIDERS__OPENAI__API_KEY": "env-api-key",
                 "SERVER_PORT": "8888",
                 "LOG_LEVEL": "WARNING",
                 "CACHE_ENABLED": "false",

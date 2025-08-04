@@ -272,6 +272,9 @@ class Settings(BaseSettings):
         env_file_alternates=[".env.local", ".env.production"],
     )
 
+    # Provider settings (main structure for environment variables)
+    providers: ProvidersSettings = Field(default_factory=ProvidersSettings)
+
     # Direct settings for backwards compatibility
     openai: OpenAISettings | None = Field(default=None)
     gemini: GeminiSettings | None = Field(default=None)
@@ -285,16 +288,6 @@ class Settings(BaseSettings):
         """Load settings from environment variables and .env files."""
         return cls()
 
-    # Backward compatibility property for providers access
-    @property
-    def providers(self) -> ProvidersSettings:
-        """Provide access to providers settings for backwards compatibility."""
-        return ProvidersSettings(
-            openai=self.openai,
-            gemini=self.gemini,
-            enabled_providers=self._get_enabled_providers(),
-            default_provider=self._get_default_provider(),
-        )
 
     def _get_enabled_providers(self) -> list[str]:
         """Get list of enabled providers."""

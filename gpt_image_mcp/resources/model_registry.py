@@ -204,8 +204,9 @@ Examples:
 
         if model_info.best_practices:
             doc += "\n## Best Practices\n"
+            practices = model_info.best_practices
             doc += (
-                f"{chr(10).join(f'- {practice}' for practice in model_info.best_practices)}\n"
+                f"{chr(10).join(f'- {practice}' for practice in practices)}\n"
             )
 
         if model_info.examples:
