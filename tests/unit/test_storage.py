@@ -302,7 +302,7 @@ class TestImageStorageManager:
         # Create a storage manager with very small size limit
         small_storage_settings = StorageSettings(
             base_path=str(storage_manager.base_path),
-            max_size_gb=0.000001,  # Very small limit (0.001 MB)
+            max_size_gb=0.000001,  # Very small limit (0.000001 GB = 0.001 MB)
             retention_days=30,
         )
         small_manager = ImageStorageManager(small_storage_settings)

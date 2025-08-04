@@ -308,6 +308,21 @@ def sanitize_prompt(prompt: str) -> str:
     return prompt
 
 
+def _is_webp_format(image_bytes: bytes) -> bool:
+    """Check if image bytes represent a WebP format.
+
+    Args:
+        image_bytes: Raw image data
+
+    Returns:
+        True if the data is WebP format, False otherwise
+    """
+    return (
+        image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
+        WEBP_WEBP_SIGNATURE in image_bytes[:12]
+    )
+
+
 def _detect_image_format(image_bytes: bytes) -> str:
     """Detect image format from byte data.
 
@@ -318,15 +333,11 @@ def _detect_image_format(image_bytes: bytes) -> str:
         MIME type string (e.g., 'image/png', 'image/jpeg')
     """
     # Check for common image format signatures
-    is_webp = (
-        image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
-        WEBP_WEBP_SIGNATURE in image_bytes[:12]
-    )
     if image_bytes.startswith(PNG_SIGNATURE):
         return 'image/png'
     elif image_bytes.startswith(JPEG_SIGNATURE):
         return 'image/jpeg'
-    elif is_webp:
+    elif _is_webp_format(image_bytes):
         return 'image/webp'
     elif image_bytes.startswith(GIF_SIGNATURE):
         return 'image/gif'

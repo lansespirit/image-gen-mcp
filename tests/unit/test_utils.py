@@ -23,6 +23,7 @@ from gpt_image_mcp.utils.validators import (
     WEBP_RIFF_SIGNATURE,
     WEBP_WEBP_SIGNATURE,
     _detect_image_format,
+    _is_webp_format,
     normalize_enum_value,
     sanitize_prompt,
     validate_background_type,
@@ -214,7 +215,7 @@ class TestPromptSanitization:
         long_prompt = "x" * 5000
         sanitized = sanitize_prompt(long_prompt)
         assert len(sanitized) == 4000
-        assert sanitized == ("x" * 4000)
+        assert sanitized == "x" * 4000
 
         normal_prompt = "normal length prompt"
         assert sanitize_prompt(normal_prompt) == normal_prompt
@@ -679,3 +680,21 @@ class TestImageFormatDetection:
         for constant in constants:
             assert isinstance(constant, bytes), f"Constant {constant} should be bytes"
             assert len(constant) > 0, f"Constant {constant} should not be empty"
+
+    def test_is_webp_format_helper_function(self):
+        """Test the WebP format detection helper function."""
+        # Valid WebP data with both RIFF and WEBP signatures
+        webp_data = WEBP_RIFF_SIGNATURE + b"XXXX" + WEBP_WEBP_SIGNATURE + b"fake_data"
+        assert _is_webp_format(webp_data) is True
+
+        # Invalid WebP - only RIFF header without WEBP signature
+        riff_only_data = WEBP_RIFF_SIGNATURE + b"fake_data_no_webp_signature"
+        assert _is_webp_format(riff_only_data) is False
+
+        # Invalid WebP - no RIFF header
+        no_riff_data = b"fake_data" + WEBP_WEBP_SIGNATURE
+        assert _is_webp_format(no_riff_data) is False
+
+        # Non-WebP data
+        png_data = PNG_SIGNATURE + b"fake_png_data"
+        assert _is_webp_format(png_data) is False

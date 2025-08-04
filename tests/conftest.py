@@ -216,8 +216,8 @@ def create_larger_test_image(width: int = 100, height: int = 100) -> bytes:
     from PIL import Image
 
     # Create a simple colored image with some pattern to increase file size
-    image = Image.new('RGB', (width, height), color='red')
-    
+    image = Image.new("RGB", (width, height), color="red")
+
     # Add some noise/pattern to increase file size
     from PIL import ImageDraw
     draw = ImageDraw.Draw(image)
