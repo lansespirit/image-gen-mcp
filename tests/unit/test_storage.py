@@ -246,8 +246,9 @@ class TestImageStorageManager:
     @pytest.mark.asyncio
     async def test_storage_stats(self, storage_manager, sample_image_bytes):
         """Test storage statistics calculation."""
-        # Store some images with larger data to get measurable size
         from tests.conftest import create_larger_test_image
+
+        # Store some images with larger data to get measurable size
         larger_image_bytes = create_larger_test_image(width=1000, height=1000)
 
         for i in range(3):
@@ -307,9 +308,10 @@ class TestImageStorageManager:
         small_manager = ImageStorageManager(small_storage_settings)
         await small_manager.initialize()
 
+        from tests.conftest import create_larger_test_image
+
         try:
             # Store multiple images to exceed size limit
-            from tests.conftest import create_larger_test_image
             larger_image_bytes = create_larger_test_image(width=500, height=500)
 
             for i in range(5):

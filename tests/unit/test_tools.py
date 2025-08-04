@@ -65,9 +65,9 @@ class TestImageGenerationTool:
         )
         mock_generation_tool._get_default_model = MagicMock(return_value="gpt-image-1")
 
-        # Mock the provider-level interaction
-        mock_provider = MagicMock()  # Use MagicMock instead of AsyncMock
-        # for non-async methods
+        # Use MagicMock for the provider object to mock non-async methods and
+        # attributes. Use AsyncMock for async methods like generate_image (see below).
+        mock_provider = MagicMock()
         mock_provider.name = "test-provider"
         mock_provider.is_available.return_value = True
         mock_provider.generate_image = AsyncMock(

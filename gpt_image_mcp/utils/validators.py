@@ -318,12 +318,15 @@ def _detect_image_format(image_bytes: bytes) -> str:
         MIME type string (e.g., 'image/png', 'image/jpeg')
     """
     # Check for common image format signatures
+    is_webp = (
+        image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
+        WEBP_WEBP_SIGNATURE in image_bytes[:12]
+    )
     if image_bytes.startswith(PNG_SIGNATURE):
         return 'image/png'
     elif image_bytes.startswith(JPEG_SIGNATURE):
         return 'image/jpeg'
-    elif (image_bytes.startswith(WEBP_RIFF_SIGNATURE) and
-          WEBP_WEBP_SIGNATURE in image_bytes[:12]):
+    elif is_webp:
         return 'image/webp'
     elif image_bytes.startswith(GIF_SIGNATURE):
         return 'image/gif'
