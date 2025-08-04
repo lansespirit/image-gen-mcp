@@ -231,7 +231,8 @@ class ImageGenerationTool:
                 raise RuntimeError(
                     "No providers are available. Please ensure you have "
                     "configured at least one provider with a valid API key. "
-                    "Set OPENAI_API_KEY for OpenAI or GEMINI_API_KEY for Gemini."
+                    "Set PROVIDERS__OPENAI__API_KEY for OpenAI or "
+                    "PROVIDERS__GEMINI__API_KEY for Gemini."
                 )
             else:
                 raise RuntimeError(

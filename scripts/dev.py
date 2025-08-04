@@ -21,7 +21,7 @@ def setup_env():
             env_file.write_text(example_file.read_text())
             print("✅ Created .env file. Please edit it with your OpenAI API key.")
         else:
-            env_file.write_text("OPENAI_API_KEY=your-api-key-here\n")
+            env_file.write_text("PROVIDERS__OPENAI__API_KEY=your-api-key-here\n")
             print("✅ Created basic .env file. Please add your OpenAI API key.")
 
     # Create storage directories
@@ -53,8 +53,8 @@ def run_server():
     print("🚀 Starting Image Gen MCP Server...")
 
     # Check for OpenAI API key
-    if not os.getenv("OPENAI_API_KEY"):
-        print("❌ OPENAI_API_KEY environment variable not set")
+    if not os.getenv("PROVIDERS__OPENAI__API_KEY"):
+        print("❌ PROVIDERS__OPENAI__API_KEY environment variable not set")
         print("   Please set it in your .env file or environment")
         return False
 
@@ -75,8 +75,8 @@ def run_example():
     """Run the basic usage example."""
     print("📖 Running basic usage example...")
 
-    if not os.getenv("OPENAI_API_KEY"):
-        print("❌ OPENAI_API_KEY environment variable not set")
+    if not os.getenv("PROVIDERS__OPENAI__API_KEY"):
+        print("❌ PROVIDERS__OPENAI__API_KEY environment variable not set")
         print("   Please set it in your .env file or environment")
         return False
 

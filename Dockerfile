@@ -16,8 +16,8 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies
-RUN uv sync --frozen --no-dev
+# Install dependencies (include all groups for proper functionality)
+RUN uv sync --frozen
 
 # Production stage
 FROM python:3.11-slim
@@ -43,7 +43,8 @@ COPY . .
 RUN mkdir -p /app/storage/images /app/storage/cache /app/storage/logs && \
     chown -R appuser:appuser /app
 
-# Set environment variables
+# Set environment variables for virtual environment activation
+ENV VIRTUAL_ENV="/app/.venv"
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 ENV PYTHONDONTWRITEBYTECODE=1

@@ -112,7 +112,7 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 - Python 3.10+
 - [UV package manager](https://docs.astral.sh/uv/)
 - OpenAI API key (for OpenAI models)
-- Google Gemini API key (for Gemini models, optional)
+- Google Cloud service account with Vertex AI access (for Imagen models, optional)
 
 ### Installation
 
@@ -128,10 +128,17 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 2. **Configure environment**:
    ```bash
    cp .env.example .env
-   # Edit .env and add your API keys:
+   # Edit .env and add your credentials:
    # - PROVIDERS__OPENAI__API_KEY for OpenAI models
-   # - PROVIDERS__GEMINI__API_KEY for Gemini models (optional)
+   # - PROVIDERS__GEMINI__API_KEY for Imagen models (path to service account JSON file)
    ```
+
+   **For Imagen models (Vertex AI setup)**:
+   1. Go to [Google Cloud Console](https://console.cloud.google.com)
+   2. Enable Vertex AI API for your project
+   3. Create a service account with "Vertex AI User" role
+   4. Download the JSON key file to your project directory
+   5. Set `PROVIDERS__GEMINI__API_KEY` to the path of your JSON file
 
 3. **Test the setup**:
    ```bash
@@ -154,6 +161,9 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 
 # Production deployment with monitoring
 ./run.sh prod
+
+# Stop all services
+./run.sh stop
 ```
 
 #### Manual Execution
@@ -218,11 +228,26 @@ This server works with **any MCP-compatible chatbot client**. Here are configura
         "image-gen-mcp"
       ],
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here"
+        "PROVIDERS__OPENAI__API_KEY": "your-api-key-here"
       }
     }
   }
 }
+```
+
+##### Claude Code (Anthropic CLI)
+```bash
+# First, create the startup script (one-time setup)
+# This is already included in the repository as start-mcp.sh
+
+# Add MCP server with API key
+claude mcp add image-gen-mcp /path/to/image-gen-mcp/start-mcp.sh -e PROVIDERS__OPENAI__API_KEY=your-api-key-here
+
+# Or add without API key if it's in your .env file
+claude mcp add image-gen-mcp /path/to/image-gen-mcp/start-mcp.sh
+
+# Verify setup
+claude mcp list
 ```
 
 ##### Continue.dev (VS Code Extension)
@@ -233,7 +258,7 @@ This server works with **any MCP-compatible chatbot client**. Here are configura
       "command": "uv",
       "args": ["--directory", "/path/to/image-gen-mcp", "run", "image-gen-mcp"],
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here"
+        "PROVIDERS__OPENAI__API_KEY": "your-api-key-here"
       }
     }
   }
@@ -360,9 +385,10 @@ PROVIDERS__OPENAI__TIMEOUT=300.0
 PROVIDERS__OPENAI__MAX_RETRIES=3
 PROVIDERS__OPENAI__ENABLED=true
 
-# Gemini Provider (default disabled)
-PROVIDERS__GEMINI__API_KEY=your-gemini-api-key-here
-PROVIDERS__GEMINI__BASE_URL=https://generativelanguage.googleapis.com/v1beta/
+# Gemini Provider (requires Vertex AI setup)
+# For Imagen models, use path to Google Cloud service account JSON file
+PROVIDERS__GEMINI__API_KEY=/path/to/your/vertex-ai-key.json
+PROVIDERS__GEMINI__BASE_URL=https://us-central1-aiplatform.googleapis.com/v1
 PROVIDERS__GEMINI__TIMEOUT=300.0
 PROVIDERS__GEMINI__MAX_RETRIES=3
 PROVIDERS__GEMINI__ENABLED=false
