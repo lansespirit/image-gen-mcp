@@ -667,4 +667,40 @@ class TestImageEditingTool:
         tool_with_invalid_settings.settings = invalid_settings
 
         with pytest.raises(ValueError, match="OpenAI provider settings are required"):
-            tool_with_invalid_settings._validate_openai_settings()
+            ImageEditingTool.validate_openai_provider_settings(invalid_settings)
+
+    def test_validate_openai_provider_settings_static_method(
+        self, mock_openai_settings
+    ):
+        """Test the static OpenAI provider settings validation method."""
+        # Test with valid settings
+        valid_settings = Settings()
+        valid_settings.providers = ProvidersSettings()
+        valid_settings.providers.openai = mock_openai_settings
+
+        # Should not raise exception
+        ImageEditingTool.validate_openai_provider_settings(valid_settings)
+
+        # Test with missing providers attribute
+        class SettingsWithoutProviders:
+            pass
+
+        settings_no_providers = SettingsWithoutProviders()
+        with pytest.raises(
+            ValueError, match="Settings must have a 'providers' attribute"
+        ):
+            ImageEditingTool.validate_openai_provider_settings(settings_no_providers)
+
+        # Test with None providers
+        settings_none_providers = Settings()
+        settings_none_providers.providers = None
+        with pytest.raises(
+            ValueError, match="Settings must have a 'providers' attribute"
+        ):
+            ImageEditingTool.validate_openai_provider_settings(settings_none_providers)
+
+        # Test with missing openai in providers
+        settings_no_openai = Settings()
+        settings_no_openai.providers = ProvidersSettings()
+        with pytest.raises(ValueError, match="OpenAI provider settings are required"):
+            ImageEditingTool.validate_openai_provider_settings(settings_no_openai)

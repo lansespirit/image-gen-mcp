@@ -1,5 +1,5 @@
 [tool.hatch.build.targets.wheel]
-packages = ["image-gen-mcp"]
+packages = ["gpt_image_mcp"]
 
 [project]
 name = "image-gen-mcp"

@@ -36,9 +36,19 @@ class ImageStorageManager:
     ) -> None:
         """Store image data with a provided image ID.
         
-        DEPRECATED: This method is mainly used for testing and backwards compatibility.
-        For production use, prefer save_image() which handles ID generation and 
-        organized storage with better file organization and metadata handling.
+        DEPRECATED: This method is deprecated and will be removed in a future release 
+        (no earlier than v1.5.0, expected Q4 2024).
+        
+        Migration path:
+            Use the `save_image()` method instead, which handles image ID generation, 
+            organized storage, and improved metadata handling.
+        
+        Example migration:
+            # Old usage:
+            await manager.store_image(image_id, image_data, metadata)
+        
+            # New usage:
+            new_image_id, image_path = await manager.save_image(image_data, metadata)
         
         Args:
             image_id: The specific image ID to use
