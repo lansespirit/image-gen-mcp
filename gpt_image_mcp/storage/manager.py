@@ -36,9 +36,9 @@ class ImageStorageManager:
     ) -> None:
         """Store image data with a provided image ID.
         
-        This method is primarily used in tests where you need to control
-        the image ID. For production use, prefer save_image() which handles
-        ID generation and organized storage.
+        DEPRECATED: This method is mainly used for testing and backwards compatibility.
+        For production use, prefer save_image() which handles ID generation and 
+        organized storage with better file organization and metadata handling.
         
         Args:
             image_id: The specific image ID to use

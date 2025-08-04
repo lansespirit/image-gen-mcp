@@ -31,7 +31,13 @@ class ImageEditingTool:
             openai_client: Optional OpenAI client manager.
         """
         self.settings = settings
-        # Ensure OpenAI provider settings are present (required for image editing)
+        self._validate_openai_settings()
+        self.storage_manager = storage_manager
+        self.cache_manager = cache_manager
+        self.openai_client = openai_client
+
+    def _validate_openai_settings(self):
+        """Ensure OpenAI provider settings are present (required for image editing)."""
         if (not hasattr(self.settings, 'providers') or
             not hasattr(self.settings.providers, 'openai') or
             not self.settings.providers.openai):
@@ -41,9 +47,6 @@ class ImageEditingTool:
                 "in your settings with api_key, api_base, and other required "
                 "parameters."
             )
-        self.storage_manager = storage_manager
-        self.cache_manager = cache_manager
-        self.openai_client = openai_client
 
     def _get_transport_type(self) -> str:
         """Detect the current transport type from environment or default to stdio."""

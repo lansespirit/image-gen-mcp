@@ -640,3 +640,31 @@ class TestImageEditingTool:
                 cache_manager=cache_manager,
                 settings=settings
             )
+
+    def test_validate_openai_settings_helper_method(
+        self, storage_manager, cache_manager, mock_openai_settings
+    ):
+        """Test the OpenAI settings validation helper method."""
+        # First test with valid settings
+        settings = Settings()
+        settings.providers = ProvidersSettings()
+        settings.providers.openai = mock_openai_settings
+
+        tool = ImageEditingTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=settings
+        )
+
+        # Should not raise an exception when validation passes
+        tool._validate_openai_settings()  # Should complete without error
+
+        # Test with invalid settings - providers without openai
+        invalid_settings = Settings()
+        invalid_settings.providers = ProvidersSettings()  # Empty providers (no openai)
+
+        tool_with_invalid_settings = ImageEditingTool.__new__(ImageEditingTool)
+        tool_with_invalid_settings.settings = invalid_settings
+
+        with pytest.raises(ValueError, match="OpenAI provider settings are required"):
+            tool_with_invalid_settings._validate_openai_settings()
