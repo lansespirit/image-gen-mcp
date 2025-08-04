@@ -36,7 +36,7 @@ Creates an image given a prompt. [Learn more](https://platform.openai.com/docs/g
 ```bash
 curl https://api.openai.com/v1/images/generations \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Authorization: Bearer $PROVIDERS__OPENAI__API_KEY" \
   -d '{
     "model": "gpt-image-1",
     "prompt": "A cute baby sea otter",
@@ -84,7 +84,7 @@ Creates an edited or extended image given source images and a prompt. Only suppo
 
 ```bash
 curl -X POST "https://api.openai.com/v1/images/edits" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Authorization: Bearer $PROVIDERS__OPENAI__API_KEY" \
   -F "model=gpt-image-1" \
   -F "image[]=@body-lotion.png" \
   -F "image[]=@bath-bomb.png" \

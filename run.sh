@@ -55,7 +55,7 @@ Examples:
     $0 test             # Run test suite
 
 Environment Setup:
-    Make sure you have .env file with OPENAI_API_KEY configured.
+    Make sure you have .env file with PROVIDERS__OPENAI__API_KEY configured.
     
 Server Access:
     HTTP Transport:     http://localhost:3001
@@ -84,7 +84,7 @@ check_requirements() {
         cp .env.example .env 2>/dev/null || {
             cat > .env << 'EOF'
 # OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key-here
+PROVIDERS__OPENAI__API_KEY=your-openai-api-key-here
 
 # Grafana Configuration
 GRAFANA_PASSWORD=admin
@@ -98,9 +98,9 @@ EOF
         return 1
     fi
 
-    # Check if OPENAI_API_KEY is set
-    if ! grep -q "^OPENAI_API_KEY=sk-" .env 2>/dev/null; then
-        log_warning "OPENAI_API_KEY not properly configured in .env file"
+    # Check if PROVIDERS__OPENAI__API_KEY is set
+    if ! grep -q "^PROVIDERS__OPENAI__API_KEY=sk-" .env 2>/dev/null; then
+        log_warning "PROVIDERS__OPENAI__API_KEY not properly configured in .env file"
         log_info "Please edit .env file and add your OpenAI API key"
         return 1
     fi

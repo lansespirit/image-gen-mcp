@@ -306,7 +306,7 @@ create_env_template() {
     
     cat > /opt/gpt-image-mcp/.env.example <<EOF
 # OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key-here
+PROVIDERS__OPENAI__API_KEY=your-openai-api-key-here
 OPENAI_ORGANIZATION=
 OPENAI_BASE_URL=https://api.openai.com/v1
 

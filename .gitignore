@@ -1,0 +1,27 @@
+.env
+__pycache__/
+*.pyc
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+.pytest_cache/
+.mypy_cache/
+.coverage
+.cache/
+*.log
+
+# Google Cloud service account keys
+vertex-ai-key.json
+*-key.json
+*-service-account.json
+vertex-ai-*.json
+service-account-*.json
+
+# Generated images and storage
+storage/
+logs/
+
+# Auto-generated monitoring configuration
+monitoring/
+redis.conf

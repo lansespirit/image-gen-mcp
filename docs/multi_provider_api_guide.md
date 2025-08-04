@@ -36,7 +36,7 @@ Creates an image given a prompt.
 ```bash
 curl https://api.openai.com/v1/images/generations \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Authorization: Bearer $PROVIDERS__OPENAI__API_KEY" \
   -d '{
     "model": "gpt-image-1",
     "prompt": "A cute baby sea otter",
@@ -65,36 +65,52 @@ Creates an edited or extended image given source images and a prompt. Only suppo
 | `output_format` | string | No | Output format for `gpt-image-1` |
 | `background` | string | No | Background setting for `gpt-image-1` |
 
-## Google Gemini Images API (OpenAI Compatible)
+## Google Vertex AI Images API (Imagen Models)
 
 ### Create Image
 
-**Endpoint**: `POST https://generativelanguage.googleapis.com/v1beta/openai/images/generations`
+**Endpoint**: `POST https://us-central1-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/us-central1/publishers/google/models/{MODEL_ID}:predict`
 
-Creates an image using Google's Imagen models through OpenAI compatibility mode.
+Creates an image using Google's Imagen models through Vertex AI API with service account authentication.
 
 #### Request Body
 
+**Format**: Vertex AI prediction format with instances and parameters.
+
+**Instances**:
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `prompt` | string | Yes | Text description of the desired image |
-| `model` | string | No | Model to use: `imagen-4`, `imagen-4-ultra`, or `imagen-3` |
-| `n` | integer | No | Number of images to generate (1-8) |
+
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `sampleCount` | integer | No | Number of images to generate (1-4) |
 | `aspectRatio` | string | No | Aspect ratio: `1:1`, `9:16`, `16:9`, `3:4`, `4:3` |
-| `outputFormat` | string | No | Output format: `png`, `jpeg` |
-| `safety` | string | No | Safety filter level: `strict`, `moderate`, `permissive` |
+
+**Available Models**:
+- `imagen-4.0-generate-preview-06-06` (Imagen-4)
+- `imagen-3.0-generate-002` (Imagen-3)
 
 #### Example Request
 
+**Note**: Gemini/Imagen models now use Vertex AI API with service account authentication.
+
 ```bash
-curl https://generativelanguage.googleapis.com/v1beta/openai/images/generations \
+# First, get access token from service account
+ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+
+curl https://us-central1-aiplatform.googleapis.com/v1/projects/YOUR_PROJECT_ID/locations/us-central1/publishers/google/models/imagen-4.0-generate-preview-06-06:predict \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $GEMINI_API_KEY" \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
   -d '{
-    "model": "imagen-4",
-    "prompt": "A beautiful sunset over mountains",
-    "n": 1,
-    "aspectRatio": "16:9"
+    "instances": [{
+      "prompt": "A beautiful sunset over mountains"
+    }],
+    "parameters": {
+      "sampleCount": 1,
+      "aspectRatio": "16:9"
+    }
   }'
 ```
 

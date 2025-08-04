@@ -1,17 +1,17 @@
 """Type definitions for Image Gen MCP Server."""
 
 from .enums import (
+    BackgroundType,
     ImageQuality,
     ImageSize,
     ImageStyle,
     ModerationLevel,
     OutputFormat,
-    BackgroundType,
 )
 
 __all__ = [
     "ImageQuality",
-    "ImageSize", 
+    "ImageSize",
     "ImageStyle",
     "ModerationLevel",
     "OutputFormat",

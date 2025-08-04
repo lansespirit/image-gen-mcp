@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Main application
   gpt-image-mcp:
@@ -9,7 +7,8 @@ services:
     ports:
       - "127.0.0.1:3001:3001"  # Bind to localhost only, nginx will proxy
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PROVIDERS__OPENAI__API_KEY=${PROVIDERS__OPENAI__API_KEY}
+      - PROVIDERS__GEMINI__API_KEY=${PROVIDERS__GEMINI__API_KEY:-}
       - REDIS_URL=redis://redis:6379/0
       - STORAGE_BASE_PATH=/app/storage
       - CACHE_ENABLED=true
