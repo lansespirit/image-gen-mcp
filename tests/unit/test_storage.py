@@ -10,6 +10,9 @@ import pytest
 from gpt_image_mcp.config.settings import StorageSettings
 from gpt_image_mcp.storage.manager import ImageStorageManager
 
+# Image format signatures
+PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+
 
 class TestImageStorageManager:
     """Test image storage manager functionality."""
@@ -498,10 +501,9 @@ class TestImageStorageManager:
         large_image = create_larger_test_image(width=1000, height=1000)
 
         # Verify they are valid PNG images (start with PNG signature)
-        png_signature = b'\x89PNG\r\n\x1a\n'
-        assert small_image.startswith(png_signature)
-        assert medium_image.startswith(png_signature)
-        assert large_image.startswith(png_signature)
+        assert small_image.startswith(PNG_SIGNATURE)
+        assert medium_image.startswith(PNG_SIGNATURE)
+        assert large_image.startswith(PNG_SIGNATURE)
 
         # Verify sizes increase as expected (larger images should be bigger files)
         assert len(small_image) < len(medium_image) < len(large_image)

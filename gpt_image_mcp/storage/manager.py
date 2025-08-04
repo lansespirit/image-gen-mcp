@@ -215,22 +215,23 @@ class ImageStorageManager:
 
     async def initialize(self):
         """Initialize storage directories."""
-        try:
-            for path in [
-                self.base_path,
-                self.images_path,
-                self.cache_path,
-                self.logs_path,
-                self.base_path / "metadata",
-            ]:
+        for path in [
+            self.base_path,
+            self.images_path,
+            self.cache_path,
+            self.logs_path,
+            self.base_path / "metadata",
+        ]:
+            try:
                 path.mkdir(parents=True, exist_ok=True)
-        except (OSError, PermissionError) as e:
-            # In tests or when path can't be created, just log the error
-            import logging
-
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Could not create storage directories: {e}")
-            # For tests, we'll allow this to continue without failing
+            except (OSError, PermissionError) as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(
+                    f"Could not create storage directory '{path}': {e}. "
+                    "Please check directory permissions or try setting a different base_path."
+                )
+        # For tests, we'll allow this to continue without failing
 
     def generate_image_id(self) -> str:
         """Generate a unique image ID."""
