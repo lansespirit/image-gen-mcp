@@ -663,9 +663,7 @@ class TestImageEditingTool:
         invalid_settings = Settings()
         invalid_settings.providers = ProvidersSettings()  # Empty providers (no openai)
 
-        tool_with_invalid_settings = ImageEditingTool.__new__(ImageEditingTool)
-        tool_with_invalid_settings.settings = invalid_settings
-
+        # Directly test the static method with invalid settings
         with pytest.raises(ValueError, match="OpenAI provider settings are required"):
             ImageEditingTool.validate_openai_provider_settings(invalid_settings)
 
