@@ -5,7 +5,7 @@ import json
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 import aiofiles
 from PIL import Image
@@ -32,12 +32,11 @@ class ImageStorageManager:
         return f"task_{timestamp}_{random_part}"
 
     async def store_image(
-        self, image_id: str, image_data: Any, metadata: dict[str, Any]
+        self, image_id: str, image_data: Union[bytes, str], metadata: dict[str, Any]
     ) -> None:
         """Store image data with a provided image ID.
         
-        DEPRECATED: This method is deprecated and will be removed in a future release 
-        (no earlier than v1.5.0, expected Q4 2024).
+        DEPRECATED: This method is deprecated and will be removed in version v1.6.0 on 2025-12-31.
         
         Migration path:
             Use the `save_image()` method instead, which handles image ID generation, 
