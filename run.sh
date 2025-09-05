@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GPT Image MCP Server - Development and Deployment Runner
+# Image Gen MCP Server - Development and Deployment Runner
 # This script helps you run the server in different modes
 
 set -euo pipefail
@@ -32,7 +32,7 @@ log_error() {
 
 show_help() {
     cat << EOF
-${CYAN}GPT Image MCP Server Runner${NC}
+${CYAN}Image Gen MCP Server Runner${NC}
 
 Usage: $0 [COMMAND] [OPTIONS]
 
@@ -116,7 +116,7 @@ run_dev() {
         log_info "Starting with Redis Commander at: ${CYAN}http://localhost:8081${NC}"
         docker-compose -f docker-compose.dev.yml --profile tools up --build
     else
-        docker-compose -f docker-compose.dev.yml up --build gpt-image-mcp-dev redis
+        docker-compose -f docker-compose.dev.yml up --build image-gen-mcp-dev redis
     fi
 }
 
@@ -124,7 +124,7 @@ run_stdio() {
     log_info "Starting server with stdio transport for Claude Desktop..."
     log_warning "This mode is for Claude Desktop integration only"
     
-    docker-compose -f docker-compose.dev.yml --profile stdio up --build gpt-image-mcp-stdio redis
+    docker-compose -f docker-compose.dev.yml --profile stdio up --build image-gen-mcp-stdio redis
 }
 
 run_prod() {
@@ -167,10 +167,10 @@ run_tests() {
 show_logs() {
     if [ -f docker-compose.prod.yml ] && docker-compose -f docker-compose.prod.yml ps | grep -q "Up"; then
         log_info "Showing production logs..."
-        docker-compose -f docker-compose.prod.yml logs -f gpt-image-mcp
+        docker-compose -f docker-compose.prod.yml logs -f image-gen-mcp
     elif docker-compose -f docker-compose.dev.yml ps | grep -q "Up"; then
         log_info "Showing development logs..."
-        docker-compose -f docker-compose.dev.yml logs -f gpt-image-mcp-dev
+        docker-compose -f docker-compose.dev.yml logs -f image-gen-mcp-dev
     else
         log_warning "No running containers found"
         log_info "Available log files:"

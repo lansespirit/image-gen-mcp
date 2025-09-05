@@ -2,10 +2,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from gpt_image_mcp.config.settings import ProvidersSettings, Settings
-from gpt_image_mcp.providers.base import ProviderError
-from gpt_image_mcp.tools.image_editing import ImageEditingTool
-from gpt_image_mcp.tools.image_generation import ImageGenerationTool
+from image_gen_mcp.config.settings import ProvidersSettings, Settings
+from image_gen_mcp.providers.base import ProviderError
+from image_gen_mcp.tools.image_editing import ImageEditingTool
+from image_gen_mcp.tools.image_generation import ImageGenerationTool
 
 
 @pytest.fixture

@@ -19,10 +19,12 @@ class OpenAIClientManager:
 
     def __init__(self, settings: OpenAISettings):
         self.settings = settings
-        self._client = self._create_client()
+        self._client = None
 
     @property
     def client(self):
+        if self._client is None:
+            self._client = self._create_client()
         return self._client
 
     def _create_client(self):

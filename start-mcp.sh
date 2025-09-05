@@ -8,4 +8,4 @@ if [ -f .env ]; then
     set +o allexport
 fi
 
-exec uv run python -m gpt_image_mcp.server
+exec uv run python -m image_gen_mcp.server

@@ -14,10 +14,11 @@ RUN pip install uv
 WORKDIR /app
 
 # Copy dependency files
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 
-# Install dependencies (include all groups for proper functionality)
-RUN uv sync --frozen
+# Install dependencies only (do not install the project itself for better caching)
+# This avoids editable build of the local package before sources are copied
+RUN uv sync --frozen --no-install-project
 
 # Production stage
 FROM python:3.11-slim
@@ -61,4 +62,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 EXPOSE 3001
 
 # Start command
-CMD ["python", "-m", "gpt_image_mcp.server"]
+CMD ["python", "-m", "image_gen_mcp.server"]

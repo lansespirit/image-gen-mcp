@@ -11,7 +11,7 @@
 # Documentation
 *.md
 docs/
-README.md
+!README.md
 
 # IDE and editor files
 .vscode/

@@ -58,7 +58,7 @@ cp .env.example .env
 ```json
 {
   "mcpServers": {
-    "image-gen": {
+    "image-gen-mcp": {
       "command": "uv",
       "args": [
         "--directory",
@@ -202,7 +202,7 @@ Design a modern minimalist logo concept with geometric shapes, black and white c
 **View Logs:**
 ```bash
 # Run server with debug logging
-uv run python -m gpt_image_mcp.server --log-level DEBUG
+uv run python -m image_gen_mcp.server --log-level DEBUG
 ```
 
 **Test Connection:**

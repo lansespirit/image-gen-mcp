@@ -169,24 +169,24 @@ The AI ecosystem has evolved to include powerful language models from multiple p
 #### Manual Execution
 ```bash
 # STDIO transport (default) - for Claude Desktop
-uv run python -m gpt_image_mcp.server
+uv run python -m image_gen_mcp.server
 
 # HTTP transport - for web deployment
-uv run python -m gpt_image_mcp.server --transport streamable-http --port 3001
+uv run python -m image_gen_mcp.server --transport streamable-http --port 3001
 
 # SSE transport - for real-time applications
-uv run python -m gpt_image_mcp.server --transport sse --port 8080
+uv run python -m image_gen_mcp.server --transport sse --port 8080
 
 # With custom configuration
-uv run python -m gpt_image_mcp.server --config /path/to/.env --log-level DEBUG
+uv run python -m image_gen_mcp.server --config /path/to/.env --log-level DEBUG
 
 # Enable CORS for web development
-uv run python -m gpt_image_mcp.server --transport streamable-http --cors
+uv run python -m image_gen_mcp.server --transport streamable-http --cors
 ```
 
 #### Command Line Options
 ```bash
-uv run python -m gpt_image_mcp.server --help
+uv run python -m image_gen_mcp.server --help
 
 Image Gen MCP Server - Generate and edit images using OpenAI's gpt-image-1 model
 
@@ -202,13 +202,13 @@ options:
 
 Examples:
   # Claude Desktop integration
-  uv run python -m gpt_image_mcp.server
+  uv run python -m image_gen_mcp.server
 
   # Web deployment with Redis cache
-  uv run python -m gpt_image_mcp.server --transport streamable-http --port 3001
+  uv run python -m image_gen_mcp.server --transport streamable-http --port 3001
 
   # Development with debug logging and tools
-  uv run python -m gpt_image_mcp.server --log-level DEBUG --cors
+  uv run python -m image_gen_mcp.server --log-level DEBUG --cors
 ```
 
 #### MCP Client Integration
@@ -254,7 +254,7 @@ claude mcp list
 ```json
 {
   "mcpServers": {
-    "gpt-image": {
+    "image-gen-mcp": {
       "command": "uv",
       "args": ["--directory", "/path/to/image-gen-mcp", "run", "image-gen-mcp"],
       "env": {
@@ -268,7 +268,7 @@ claude mcp list
 ##### Custom MCP Clients
 For other MCP-compatible applications, use the standard MCP STDIO transport:
 ```bash
-uv run python -m gpt_image_mcp.server
+uv run python -m image_gen_mcp.server
 ```
 
 > **Universal Compatibility**: This server follows the standard MCP protocol, ensuring compatibility with current and future MCP-enabled clients across the AI ecosystem.
@@ -528,7 +528,7 @@ uv run python scripts/dev.py example
 # Run specific test categories
 uv run pytest tests/unit/      # Unit tests only
 uv run pytest tests/integration/ # Integration tests only
-uv run pytest -v --cov=gpt_image_mcp # With coverage
+uv run pytest -v --cov=image_gen_mcp # With coverage
 ```
 
 ## Architecture

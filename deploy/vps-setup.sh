@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# GPT Image MCP Server - VPS Deployment Script
+# Image Gen MCP Server - VPS Deployment Script
 # This script sets up the complete production environment on Ubuntu 22.04
 
 set -euo pipefail
@@ -162,13 +162,13 @@ create_directories() {
     log_info "Creating application directories..."
     
     # Create app directory
-    sudo mkdir -p /opt/gpt-image-mcp
-    sudo chown $USER:$USER /opt/gpt-image-mcp
+    sudo mkdir -p /opt/image-gen-mcp
+    sudo chown $USER:$USER /opt/image-gen-mcp
     
     # Create data directories
-    mkdir -p /opt/gpt-image-mcp/{storage,logs,monitoring,nginx,ssl}
-    mkdir -p /opt/gpt-image-mcp/storage/{images,cache}
-    mkdir -p /opt/gpt-image-mcp/monitoring/{prometheus,grafana}
+    mkdir -p /opt/image-gen-mcp/{storage,logs,monitoring,nginx,ssl}
+    mkdir -p /opt/image-gen-mcp/storage/{images,cache}
+    mkdir -p /opt/image-gen-mcp/monitoring/{prometheus,grafana}
     
     log_success "Directories created successfully"
 }
@@ -181,7 +181,7 @@ configure_nginx() {
     sudo rm -f /etc/nginx/sites-enabled/default
     
     # Create application config
-    sudo tee /etc/nginx/sites-available/gpt-image-mcp > /dev/null <<EOF
+    sudo tee /etc/nginx/sites-available/image-gen-mcp > /dev/null <<EOF
 # Rate limiting
 limit_req_zone \$binary_remote_addr zone=api:10m rate=10r/m;
 
@@ -232,7 +232,7 @@ server {
     
     # Static files (if any)
     location /static/ {
-        alias /opt/gpt-image-mcp/static/;
+        alias /opt/image-gen-mcp/static/;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
@@ -258,7 +258,7 @@ server {
 EOF
 
     # Enable the site
-    sudo ln -sf /etc/nginx/sites-available/gpt-image-mcp /etc/nginx/sites-enabled/
+    sudo ln -sf /etc/nginx/sites-available/image-gen-mcp /etc/nginx/sites-enabled/
     
     # Test nginx configuration
     sudo nginx -t
@@ -273,19 +273,19 @@ EOF
 create_systemd_service() {
     log_info "Creating systemd service..."
     
-    sudo tee /etc/systemd/system/gpt-image-mcp.service > /dev/null <<EOF
+    sudo tee /etc/systemd/system/image-gen-mcp.service > /dev/null <<EOF
 [Unit]
-Description=GPT Image MCP Server
+Description=Image Gen MCP Server
 Requires=docker.service
 After=docker.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/gpt-image-mcp
+WorkingDirectory=/opt/image-gen-mcp
 ExecStart=/usr/local/bin/docker-compose -f docker-compose.prod.yml up -d
 ExecStop=/usr/local/bin/docker-compose -f docker-compose.prod.yml down
-ExecReload=/usr/local/bin/docker-compose -f docker-compose.prod.yml restart gpt-image-mcp
+ExecReload=/usr/local/bin/docker-compose -f docker-compose.prod.yml restart image-gen-mcp
 TimeoutStartSec=0
 User=$USER
 Group=docker
@@ -295,7 +295,7 @@ WantedBy=multi-user.target
 EOF
 
     sudo systemctl daemon-reload
-    sudo systemctl enable gpt-image-mcp
+    sudo systemctl enable image-gen-mcp
     
     log_success "Systemd service created and enabled"
 }
@@ -304,7 +304,7 @@ EOF
 create_env_template() {
     log_info "Creating environment configuration..."
     
-    cat > /opt/gpt-image-mcp/.env.example <<EOF
+    cat > /opt/image-gen-mcp/.env.example <<EOF
 # OpenAI Configuration
 PROVIDERS__OPENAI__API_KEY=your-openai-api-key-here
 OPENAI_ORGANIZATION=
@@ -338,7 +338,7 @@ GRAFANA_PASSWORD=your-secure-password-here
 EOF
 
     log_warning "Please copy .env.example to .env and configure your settings:"
-    log_info "cd /opt/gpt-image-mcp && cp .env.example .env && nano .env"
+    log_info "cd /opt/image-gen-mcp && cp .env.example .env && nano .env"
 }
 
 # Create monitoring configuration
@@ -346,8 +346,8 @@ create_monitoring_config() {
     log_info "Creating monitoring configuration..."
     
     # Prometheus configuration
-    mkdir -p /opt/gpt-image-mcp/monitoring
-    cat > /opt/gpt-image-mcp/monitoring/prometheus.yml <<EOF
+    mkdir -p /opt/image-gen-mcp/monitoring
+    cat > /opt/image-gen-mcp/monitoring/prometheus.yml <<EOF
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -361,9 +361,9 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'gpt-image-mcp'
+  - job_name: 'image-gen-mcp'
     static_configs:
-      - targets: ['gpt-image-mcp:3001']
+      - targets: ['image-gen-mcp:3001']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
@@ -377,7 +377,7 @@ scrape_configs:
 EOF
 
     # Redis configuration
-    cat > /opt/gpt-image-mcp/redis.conf <<EOF
+    cat > /opt/image-gen-mcp/redis.conf <<EOF
 # Redis configuration for production
 bind 127.0.0.1
 protected-mode yes
@@ -409,13 +409,13 @@ install_ssl() {
 create_backup_script() {
     log_info "Creating backup script..."
     
-    cat > /opt/gpt-image-mcp/backup.sh <<'EOF'
+    cat > /opt/image-gen-mcp/backup.sh <<'EOF'
 #!/bin/bash
 
-# GPT Image MCP Server Backup Script
-BACKUP_DIR="/opt/backups/gpt-image-mcp"
+# Image Gen MCP Server Backup Script
+BACKUP_DIR="/opt/backups/image-gen-mcp"
 DATE=$(date +%Y%m%d_%H%M%S)
-APP_DIR="/opt/gpt-image-mcp"
+APP_DIR="/opt/image-gen-mcp"
 
 # Create backup directory
 mkdir -p $BACKUP_DIR
@@ -425,9 +425,9 @@ tar -czf "$BACKUP_DIR/storage_$DATE.tar.gz" -C "$APP_DIR" storage/
 tar -czf "$BACKUP_DIR/logs_$DATE.tar.gz" -C "$APP_DIR" logs/
 
 # Backup Redis data
-docker exec gpt-image-mcp-redis redis-cli BGSAVE
+docker exec image-gen-mcp-redis redis-cli BGSAVE
 sleep 5
-docker cp gpt-image-mcp-redis:/data/dump.rdb "$BACKUP_DIR/redis_$DATE.rdb"
+docker cp image-gen-mcp-redis:/data/dump.rdb "$BACKUP_DIR/redis_$DATE.rdb"
 
 # Backup configuration
 tar -czf "$BACKUP_DIR/config_$DATE.tar.gz" -C "$APP_DIR" .env docker-compose.prod.yml nginx/
@@ -439,16 +439,16 @@ find $BACKUP_DIR -name "*.rdb" -mtime +7 -delete
 echo "Backup completed: $DATE"
 EOF
 
-    chmod +x /opt/gpt-image-mcp/backup.sh
+    chmod +x /opt/image-gen-mcp/backup.sh
     
     log_success "Backup script created"
     log_info "Set up daily backups with: crontab -e"
-    log_info "Add: 0 2 * * * /opt/gpt-image-mcp/backup.sh"
+    log_info "Add: 0 2 * * * /opt/image-gen-mcp/backup.sh"
 }
 
 # Main installation function
 main() {
-    log_info "Starting GPT Image MCP Server VPS deployment..."
+    log_info "Starting Image Gen MCP Server VPS deployment..."
     
     check_root
     update_system
@@ -468,9 +468,9 @@ main() {
     log_success "VPS setup completed successfully!"
     echo
     log_info "Next steps:"
-    echo "1. Configure your environment: cd /opt/gpt-image-mcp && cp .env.example .env && nano .env"
-    echo "2. Upload your application code to /opt/gpt-image-mcp"
-    echo "3. Start the services: sudo systemctl start gpt-image-mcp"
+    echo "1. Configure your environment: cd /opt/image-gen-mcp && cp .env.example .env && nano .env"
+    echo "2. Upload your application code to /opt/image-gen-mcp"
+    echo "3. Start the services: sudo systemctl start image-gen-mcp"
     echo "4. Configure SSL: sudo certbot --nginx -d your-domain.com"
     echo "5. Set up monitoring access: sudo htpasswd -c /etc/nginx/.htpasswd admin"
     echo

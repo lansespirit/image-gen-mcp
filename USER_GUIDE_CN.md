@@ -202,7 +202,7 @@ IMAGES__DEFAULT_SIZE=1536x1024
 **查看日志：**
 ```bash
 # 运行服务器并查看日志
-uv run python -m gpt_image_mcp.server --log-level DEBUG
+uv run python -m image_gen_mcp.server --log-level DEBUG
 ```
 
 **测试连接：**

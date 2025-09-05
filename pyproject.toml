@@ -1,5 +1,5 @@
 [tool.hatch.build.targets.wheel]
-packages = ["gpt_image_mcp"]
+packages = ["image_gen_mcp"]
 
 [project]
 name = "image-gen-mcp"
@@ -37,7 +37,7 @@ cache = [
 ]
 
 [project.scripts]
-image-gen-mcp = "gpt_image_mcp.server:main"
+image-gen-mcp = "image_gen_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

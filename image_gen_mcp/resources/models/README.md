@@ -4,7 +4,7 @@ This document explains how to add new AI models to the MCP server's model regist
 
 ## Model Configuration Structure
 
-Each model is defined by a JSON configuration file in `./gpt_image_mcp/resources/models/`. The file should be named `{model_id}.json` where `model_id` is the unique identifier for the model.
+Each model is defined by a JSON configuration file in `./image_gen_mcp/resources/models/`. The file should be named `{model_id}.json` where `model_id` is the unique identifier for the model.
 
 ## Configuration Fields
 
@@ -57,7 +57,7 @@ Each model is defined by a JSON configuration file in `./gpt_image_mcp/resources
 
 ## Adding a New Model
 
-1. Create a new JSON file in `./gpt_image_mcp/resources/models/`
+1. Create a new JSON file in `./image_gen_mcp/resources/models/`
 2. Name it `{model_id}.json` (e.g., `dalle-3.json`)
 3. Fill in all required fields
 4. The model will be automatically available via the resource URIs
@@ -95,7 +95,7 @@ For more detailed documentation, you can also create a `{model_id}.md` file alon
 You can also register models programmatically using the `model_registry`:
 
 ```python
-from gpt_image_mcp.resources.model_registry import model_registry, ModelInfo
+from image_gen_mcp.resources.model_registry import model_registry, ModelInfo
 
 new_model = ModelInfo(
     model_id="my-model",

@@ -10,16 +10,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 import pytest_asyncio
 
-from gpt_image_mcp.config.settings import (
+from image_gen_mcp.config.settings import (
     CacheSettings,
     GeminiSettings,
     ImageSettings,
     Settings,
     StorageSettings,
 )
-from gpt_image_mcp.storage.manager import ImageStorageManager
-from gpt_image_mcp.utils.cache import CacheManager
-from gpt_image_mcp.utils.openai_client import OpenAIClientManager
+from image_gen_mcp.storage.manager import ImageStorageManager
+from image_gen_mcp.utils.cache import CacheManager
+from image_gen_mcp.utils.openai_client import OpenAIClientManager
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def temp_storage_path() -> Generator[Path, None, None]:
 @pytest.fixture
 def mock_openai_settings():
     """Mock OpenAI settings for testing."""
-    from gpt_image_mcp.config.settings import OpenAISettings
+    from image_gen_mcp.config.settings import OpenAISettings
 
     return OpenAISettings(
         api_key="test-api-key",
@@ -94,7 +94,7 @@ def mock_settings(
     mock_image_settings,
 ):
     """Complete mock settings configuration."""
-    from gpt_image_mcp.config.settings import ServerSettings
+    from image_gen_mcp.config.settings import ServerSettings
 
     return Settings(
         server=ServerSettings(

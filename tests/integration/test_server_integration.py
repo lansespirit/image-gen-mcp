@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from gpt_image_mcp.resources.image_resources import ImageResourceManager
-from gpt_image_mcp.resources.model_registry import model_registry
-from gpt_image_mcp.resources.prompt_templates import PromptTemplateResourceManager
+from image_gen_mcp.resources.image_resources import ImageResourceManager
+from image_gen_mcp.resources.model_registry import model_registry
+from image_gen_mcp.resources.prompt_templates import PromptTemplateResourceManager
 
 
 class TestImageResourceManager:
@@ -299,12 +299,12 @@ class TestServerIntegration:
     @pytest.mark.asyncio
     async def test_server_context_creation(self, mock_settings):
         """Test server context creation with all components."""
-        from gpt_image_mcp.resources.image_resources import ImageResourceManager
-        from gpt_image_mcp.server import ServerContext
-        from gpt_image_mcp.storage.manager import ImageStorageManager
-        from gpt_image_mcp.tools.image_editing import ImageEditingTool
-        from gpt_image_mcp.tools.image_generation import ImageGenerationTool
-        from gpt_image_mcp.utils.cache import CacheManager
+        from image_gen_mcp.resources.image_resources import ImageResourceManager
+        from image_gen_mcp.server import ServerContext
+        from image_gen_mcp.storage.manager import ImageStorageManager
+        from image_gen_mcp.tools.image_editing import ImageEditingTool
+        from image_gen_mcp.tools.image_generation import ImageGenerationTool
+        from image_gen_mcp.utils.cache import CacheManager
 
         # Create all components
         storage_manager = ImageStorageManager(mock_settings.storage)
@@ -354,13 +354,13 @@ class TestServerIntegration:
         finally:
             await storage_manager.close()
 
-    @patch("gpt_image_mcp.server.mcp")
+    @patch("image_gen_mcp.server.mcp")
     @pytest.mark.asyncio
     async def test_server_tool_integration(
         self, mock_mcp, mock_settings, sample_image_data
     ):
         """Test server tool integration with MCP context."""
-        from gpt_image_mcp.server import edit_image, generate_image
+        from image_gen_mcp.server import edit_image, generate_image
 
         # Mock MCP context
         mock_context = MagicMock()
@@ -415,11 +415,11 @@ class TestServerIntegration:
         assert result == edit_result
         mock_editing_tool.edit.assert_called_once()
 
-    @patch("gpt_image_mcp.server.mcp")
+    @patch("image_gen_mcp.server.mcp")
     @pytest.mark.asyncio
     async def test_server_resource_integration(self, mock_mcp, mock_settings):
         """Test server resource integration."""
-        from gpt_image_mcp.server import (
+        from image_gen_mcp.server import (
             get_generated_image,
             get_model_info,
             get_recent_images,
@@ -473,10 +473,10 @@ class TestServerIntegration:
     @pytest.mark.asyncio
     async def test_end_to_end_workflow(self, mock_settings, sample_image_bytes):
         """Test complete end-to-end workflow."""
-        from gpt_image_mcp.resources.image_resources import ImageResourceManager
-        from gpt_image_mcp.storage.manager import ImageStorageManager
-        from gpt_image_mcp.tools.image_generation import ImageGenerationTool
-        from gpt_image_mcp.utils.cache import CacheManager
+        from image_gen_mcp.resources.image_resources import ImageResourceManager
+        from image_gen_mcp.storage.manager import ImageStorageManager
+        from image_gen_mcp.tools.image_generation import ImageGenerationTool
+        from image_gen_mcp.utils.cache import CacheManager
 
         # Initialize all components
         storage_manager = ImageStorageManager(mock_settings.storage)
@@ -491,7 +491,7 @@ class TestServerIntegration:
                 from unittest.mock import patch
 
                 with patch(
-                    "gpt_image_mcp.providers.openai.OpenAIProvider"
+                    "image_gen_mcp.providers.openai.OpenAIProvider"
                 ) as mock_provider_class:
                     # Mock provider instance
                     mock_provider = MagicMock()
@@ -499,7 +499,7 @@ class TestServerIntegration:
                     mock_provider.is_available.return_value = True
 
                     # Mock provider response with proper serializable values
-                    from gpt_image_mcp.providers.base import ImageResponse
+                    from image_gen_mcp.providers.base import ImageResponse
 
                     provider_response = ImageResponse(
                         image_data=sample_image_bytes,
@@ -521,10 +521,10 @@ class TestServerIntegration:
                     # Mock provider registry to return our mock provider
                     with (
                         patch(
-                            "gpt_image_mcp.providers.registry.ProviderRegistry.get_provider_for_model"
+                            "image_gen_mcp.providers.registry.ProviderRegistry.get_provider_for_model"
                         ) as mock_get_provider,
                         patch(
-                            "gpt_image_mcp.providers.registry.ProviderRegistry.validate_model_request"
+                            "image_gen_mcp.providers.registry.ProviderRegistry.validate_model_request"
                         ) as mock_validate_request,
                     ):
                         mock_get_provider.return_value = mock_provider

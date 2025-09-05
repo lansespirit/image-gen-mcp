@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from gpt_image_mcp.config.settings import StorageSettings
-from gpt_image_mcp.storage.manager import ImageStorageManager
+from image_gen_mcp.config.settings import StorageSettings
+from image_gen_mcp.storage.manager import ImageStorageManager
 
 # Image format signatures
 PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'

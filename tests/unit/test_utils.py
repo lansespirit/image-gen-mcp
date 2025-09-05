@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from gpt_image_mcp.types.enums import (
+from image_gen_mcp.types.enums import (
     BackgroundType,
     ImageQuality,
     ImageSize,
@@ -13,9 +13,9 @@ from gpt_image_mcp.types.enums import (
     ModerationLevel,
     OutputFormat,
 )
-from gpt_image_mcp.utils.cache import CacheManager, MemoryCache
-from gpt_image_mcp.utils.openai_client import OpenAIClientManager
-from gpt_image_mcp.utils.validators import (
+from image_gen_mcp.utils.cache import CacheManager, MemoryCache
+from image_gen_mcp.utils.openai_client import OpenAIClientManager
+from image_gen_mcp.utils.validators import (
     BMP_SIGNATURE,
     GIF_SIGNATURE,
     JPEG_SIGNATURE,
@@ -538,7 +538,7 @@ class TestOpenAIClientManager:
         # Client should be created lazily
         assert hasattr(manager, "_client")
 
-    @patch("gpt_image_mcp.utils.openai_client.AsyncOpenAI")
+    @patch("image_gen_mcp.utils.openai_client.AsyncOpenAI")
     def test_async_openai_client_creation(
         self, mock_openai_class, mock_openai_settings
     ):
@@ -560,7 +560,7 @@ class TestOpenAIClientManager:
 
         assert client == mock_client
 
-    @patch("gpt_image_mcp.utils.openai_client.AsyncOpenAI")
+    @patch("image_gen_mcp.utils.openai_client.AsyncOpenAI")
     def test_openai_client_singleton(self, mock_openai_class, mock_openai_settings):
         """Test that client is created only once (singleton pattern)."""
         mock_client = MagicMock()
@@ -578,14 +578,14 @@ class TestOpenAIClientManager:
 
     def test_openai_client_manager_settings_validation(self):
         """Test that invalid settings raise appropriate errors."""
-        from gpt_image_mcp.config.settings import OpenAISettings
+        from image_gen_mcp.config.settings import OpenAISettings
 
         # Missing API key should raise validation error during settings creation
         with pytest.raises(Exception):  # Pydantic ValidationError
             invalid_settings = OpenAISettings()
             OpenAIClientManager(invalid_settings)
 
-    @patch("gpt_image_mcp.utils.openai_client.AsyncOpenAI")
+    @patch("image_gen_mcp.utils.openai_client.AsyncOpenAI")
     def test_openai_client_with_organization(
         self, mock_openai_class, mock_openai_settings
     ):
@@ -606,7 +606,7 @@ class TestOpenAIClientManager:
             timeout=mock_openai_settings.timeout,
         )
 
-    @patch("gpt_image_mcp.utils.openai_client.AsyncOpenAI")
+    @patch("image_gen_mcp.utils.openai_client.AsyncOpenAI")
     def test_openai_client_custom_settings(
         self, mock_openai_class, mock_openai_settings
     ):

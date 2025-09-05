@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from gpt_image_mcp.config.settings import (
+from image_gen_mcp.config.settings import (
     CacheSettings,
     ImageSettings,
     OpenAISettings,

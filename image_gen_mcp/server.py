@@ -1,4 +1,7 @@
-"""Main MCP server implementation for GPT Image generation."""
+"""Main MCP server implementation for Image Gen.
+
+This server integrates multiple image-generation providers behind a unified MCP interface.
+"""
 
 import argparse
 import asyncio
@@ -87,16 +90,16 @@ def parse_arguments() -> argparse.Namespace:
         epilog="""
 Examples:
   # Run with default stdio transport for Claude Desktop
-  python -m gpt_image_mcp.server
+  python -m image_gen_mcp.server
 
   # Run with HTTP transport for web deployment
-  python -m gpt_image_mcp.server --transport streamable-http --port 3001
+  python -m image_gen_mcp.server --transport streamable-http --port 3001
 
   # Run with custom config and debug logging
-  python -m gpt_image_mcp.server --config /path/to/config.env --log-level DEBUG
+  python -m image_gen_mcp.server --config /path/to/config.env --log-level DEBUG
 
   # Run with SSE transport
-  python -m gpt_image_mcp.server --transport sse --port 8080
+  python -m image_gen_mcp.server --transport sse --port 8080
         """,
     )
 

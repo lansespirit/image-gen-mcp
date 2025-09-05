@@ -59,9 +59,7 @@ def run_server():
         return False
 
     try:
-        subprocess.run(
-            ["uv", "run", "python", "-m", "gpt_image_mcp.server"], check=True
-        )
+        subprocess.run(["uv", "run", "python", "-m", "image_gen_mcp.server"], check=True)
         return True
     except KeyboardInterrupt:
         print("\n👋 Server stopped")
@@ -95,7 +93,7 @@ def lint_code():
     # Run ruff
     try:
         result = subprocess.run(
-            ["uv", "run", "ruff", "check", "gpt_image_mcp/"],
+            ["uv", "run", "ruff", "check", "image_gen_mcp/"],
             check=False,
             capture_output=True,
             text=True,
@@ -122,7 +120,7 @@ def format_code():
 
     try:
         subprocess.run(
-            ["uv", "run", "black", "gpt_image_mcp/", "tests/", "examples/"], check=True
+            ["uv", "run", "black", "image_gen_mcp/", "tests/", "examples/"], check=True
         )
         print("✅ Code formatted successfully")
         return True
