@@ -62,11 +62,42 @@ class GeminiSettings(BaseModel):
         return v.rstrip("/")
 
 
+class OpenRouterSettings(BaseModel):
+    """OpenRouter API configuration.
+
+    OpenRouter provides image generation via the chat completions API
+    with ``modalities: ["image", "text"]``, not the standard Images API.
+    """
+
+    api_key: str = Field(..., min_length=1, description="OpenRouter API key")
+    base_url: str = Field(
+        "https://openrouter.ai/api/v1",
+        description="OpenRouter API base URL",
+    )
+    timeout: float = Field(300.0, description="Request timeout in seconds")
+    max_retries: int = Field(3, description="Maximum number of retries")
+    enabled: bool = Field(False, description="Enable OpenRouter provider")
+    app_name: str | None = Field(
+        None, description="App name for X-Title header (rankings)"
+    )
+    app_url: str | None = Field(
+        None, description="App URL for HTTP-Referer header (rankings)"
+    )
+
+    @field_validator("base_url")
+    @classmethod
+    def validate_base_url(cls, v):
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("Base URL must start with http:// or https://")
+        return v.rstrip("/")
+
+
 class ProvidersSettings(BaseModel):
     """Multi-provider configuration."""
 
     openai: OpenAISettings | None = None
     gemini: GeminiSettings | None = None
+    openrouter: OpenRouterSettings | None = None
     enabled_providers: list[str] = Field(
         default_factory=list, description="List of enabled providers"
     )
@@ -96,6 +127,17 @@ class ProvidersSettings(BaseModel):
                 )
             except Exception as e:
                 raise ValueError(f"Invalid Gemini provider config: {e}")
+        if self.openrouter is not None and not isinstance(
+            self.openrouter, OpenRouterSettings
+        ):
+            try:
+                self.openrouter = (
+                    OpenRouterSettings(**self.openrouter)
+                    if isinstance(self.openrouter, dict)
+                    else OpenRouterSettings()
+                )
+            except Exception as e:
+                raise ValueError(f"Invalid OpenRouter provider config: {e}")
 
         # Auto-enable providers based on configuration
         if (
@@ -113,6 +155,14 @@ class ProvidersSettings(BaseModel):
         ):
             if "gemini" not in self.enabled_providers:
                 self.enabled_providers.append("gemini")
+
+        if (
+            self.openrouter
+            and getattr(self.openrouter, "api_key", None)
+            and getattr(self.openrouter, "enabled", False)
+        ):
+            if "openrouter" not in self.enabled_providers:
+                self.enabled_providers.append("openrouter")
 
         # Set default provider if not specified
         if not self.default_provider and self.enabled_providers:
@@ -311,6 +361,7 @@ class Settings(BaseSettings):
     # Direct settings for backwards compatibility
     openai: OpenAISettings | None = Field(default=None)
     gemini: GeminiSettings | None = Field(default=None)
+    openrouter: OpenRouterSettings | None = Field(default=None)
     images: ImageSettings = Field(default_factory=ImageSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
@@ -337,6 +388,12 @@ class Settings(BaseSettings):
             and getattr(self.gemini, "enabled", False)
         ):
             enabled.append("gemini")
+        if (
+            self.openrouter
+            and getattr(self.openrouter, "api_key", None)
+            and getattr(self.openrouter, "enabled", False)
+        ):
+            enabled.append("openrouter")
         return enabled
 
     def _get_default_provider(self) -> str:

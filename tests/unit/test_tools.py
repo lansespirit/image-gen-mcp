@@ -691,19 +691,22 @@ class TestImageEditingTool:
     def test_missing_openai_provider_configuration(
         self, storage_manager, cache_manager
     ):
-        """Test that missing OpenAI provider configuration raises proper error."""
-        # Create settings with missing OpenAI provider
+        """Editing without OpenAI raises RuntimeError at edit time, not startup."""
         settings = Settings()
-        settings.providers = ProvidersSettings()  # Empty providers (no openai)
+        settings.providers = ProvidersSettings()
+
+        tool = ImageEditingTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=settings,
+            openai_client=None,
+        )
 
         with pytest.raises(
-            ValueError, match="OpenAI provider settings are required"
+            RuntimeError, match="Image editing requires an OpenAI provider"
         ):
-            ImageEditingTool(
-                storage_manager=storage_manager,
-                cache_manager=cache_manager,
-                settings=settings
-            )
+            import asyncio
+            asyncio.run(tool.edit(image_data="test", prompt="test"))
 
     def test_validate_openai_settings_helper_method(
         self, storage_manager, cache_manager, mock_openai_settings
@@ -766,3 +769,68 @@ class TestImageEditingTool:
         settings_no_openai.providers = ProvidersSettings()
         with pytest.raises(ValueError, match="OpenAI provider settings are required"):
             ImageEditingTool.validate_openai_provider_settings(settings_no_openai)
+
+
+class TestActualFormatPropagation:
+    """Regression: save_image and returned metadata must use the actual format
+    returned by the provider, not the requested format."""
+
+    def _make_tool(self, storage_manager, cache_manager, mock_settings):
+        tool = ImageGenerationTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=mock_settings,
+        )
+        tool.provider_registry.get_provider_for_model = MagicMock()
+        return tool
+
+    @pytest.mark.asyncio
+    async def test_provider_returns_different_format_than_requested(
+        self, storage_manager, cache_manager, mock_settings
+    ):
+        tool = self._make_tool(storage_manager, cache_manager, mock_settings)
+        tool.cache_manager.get_image_generation = AsyncMock(return_value=None)
+        tool.cache_manager.set_image_generation = AsyncMock()
+
+        save_image_mock = AsyncMock(return_value=("img_test", "/path/img_test.png"))
+        tool.storage_manager.save_image = save_image_mock
+        tool._build_image_url = MagicMock(return_value="file:///path/img_test.png")
+        tool._get_default_model = MagicMock(return_value="gpt-5-image-mini")
+
+        mock_provider = MagicMock()
+        mock_provider.name = "openrouter"
+        mock_provider.is_available.return_value = True
+        mock_provider.generate_image = AsyncMock(
+            return_value=MagicMock(
+                image_data=b"fake_png_bytes",
+                metadata={"output_format": "png"},
+            )
+        )
+        mock_provider.estimate_cost.return_value = {"estimated_cost_usd": 0.0}
+
+        tool.provider_registry.get_provider_for_model = MagicMock(
+            return_value=mock_provider
+        )
+        tool.provider_registry.validate_model_request = MagicMock(
+            return_value={
+                "quality": "auto",
+                "size": "1024x1024",
+                "style": "vivid",
+                "moderation": "auto",
+                "output_format": "jpeg",
+                "compression": 100,
+                "background": "auto",
+            }
+        )
+
+        result = await tool.generate(
+            prompt="test", model="gpt-5-image-mini", output_format="jpeg"
+        )
+
+        _, save_kwargs = save_image_mock.call_args
+        assert save_kwargs["file_format"] == "png", (
+            "save_image must use actual format from provider metadata,"
+            " not the requested 'jpeg'"
+        )
+        assert result["metadata"]["output_format"] == "png"
+        assert result["metadata"]["format"] == "PNG"

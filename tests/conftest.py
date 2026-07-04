@@ -51,6 +51,20 @@ def mock_gemini_settings():
 
 
 @pytest.fixture
+def mock_openrouter_settings():
+    """Mock OpenRouter settings for testing."""
+    from image_gen_mcp.config.settings import OpenRouterSettings
+
+    return OpenRouterSettings(
+        api_key="sk-or-v1-test-key",
+        base_url="https://openrouter.ai/api/v1",
+        enabled=True,
+        app_name="Test App",
+        app_url="https://test.example",
+    )
+
+
+@pytest.fixture
 def mock_storage_settings(temp_storage_path: Path):
     """Mock storage settings using temporary directory."""
     return StorageSettings(

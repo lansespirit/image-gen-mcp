@@ -9,6 +9,7 @@ from ..config.settings import Settings
 from ..providers.base import ProviderConfig, ProviderError
 from ..providers.gemini import GeminiProvider
 from ..providers.openai import OpenAIProvider
+from ..providers.openrouter import OpenRouterProvider
 from ..providers.registry import ProviderRegistry
 from ..storage.manager import ImageStorageManager
 from ..types.enums import (
@@ -90,6 +91,33 @@ class ImageGenerationTool:
 
             except Exception as e:
                 logger.error(f"Failed to initialize Gemini provider: {e}")
+
+        # Initialize OpenRouter provider
+        openrouter_settings = getattr(self.settings.providers, "openrouter", None)
+        if (
+            openrouter_settings
+            and openrouter_settings.enabled
+            and openrouter_settings.api_key
+        ):
+            try:
+                custom_headers = {}
+                if openrouter_settings.app_name:
+                    custom_headers["X-Title"] = openrouter_settings.app_name
+                if openrouter_settings.app_url:
+                    custom_headers["HTTP-Referer"] = openrouter_settings.app_url
+                openrouter_config = ProviderConfig(
+                    api_key=openrouter_settings.api_key,
+                    base_url=openrouter_settings.base_url,
+                    timeout=openrouter_settings.timeout,
+                    max_retries=openrouter_settings.max_retries,
+                    enabled=openrouter_settings.enabled,
+                    custom_headers=custom_headers,
+                )
+                openrouter_provider = OpenRouterProvider(openrouter_config)
+                self._register_provider_async(openrouter_provider)
+                logger.info("OpenRouter provider initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize OpenRouter provider: {e}")
 
     def _register_provider_async(self, provider) -> None:
         """Store provider for async registration later."""
@@ -295,17 +323,21 @@ class ImageGenerationTool:
                 "provider_metadata": provider_response.metadata,
             }
 
+            actual_output_format = (
+                provider_response.metadata.get("output_format")
+                or validated_params.get("output_format")
+                or output_format_str
+            ).lower()
+
             # Save to local storage
             image_id, image_path = await self.storage_manager.save_image(
                 image_data=provider_response.image_data,
                 metadata=metadata,
-                file_format=validated_params.get("output_format", output_format_str),
+                file_format=actual_output_format,
             )
 
             # Build image URL instead of base64 data
-            image_url = self._build_image_url(
-                image_id, validated_params.get("output_format", output_format_str)
-            )
+            image_url = self._build_image_url(image_id, actual_output_format)
 
             # Prepare result
             result = {
@@ -320,18 +352,14 @@ class ImageGenerationTool:
                     "quality": validated_params.get("quality", quality_str),
                     "style": validated_params.get("style", style_str),
                     "moderation": validated_params.get("moderation", moderation_str),
-                    "output_format": validated_params.get(
-                        "output_format", output_format_str
-                    ),
+                    "output_format": actual_output_format,
                     "background": validated_params.get("background", background_str),
                     "prompt": prompt,
                     "created_at": metadata.get("created_at"),
                     "cost_estimate": cost_info.get("estimated_cost_usd"),
                     "file_size_bytes": len(provider_response.image_data),
                     "dimensions": validated_params.get("size", size_str),
-                    "format": validated_params.get(
-                        "output_format", output_format_str
-                    ).upper(),
+                    "format": actual_output_format.upper(),
                 },
             }
 

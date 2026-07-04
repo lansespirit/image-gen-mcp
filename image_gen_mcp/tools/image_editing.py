@@ -32,7 +32,6 @@ class ImageEditingTool:
             openai_client: Optional OpenAI client manager.
         """
         self.settings = settings
-        self._validate_openai_settings()
         self.storage_manager = storage_manager
         self.cache_manager = cache_manager
         self.openai_client = openai_client
@@ -106,6 +105,13 @@ class ImageEditingTool:
         background: str = "auto",
     ) -> dict[str, Any]:
         """Edit an existing image with text instructions."""
+
+        if not self.openai_client:
+            raise RuntimeError(
+                "Image editing requires an OpenAI provider. "
+                "Configure PROVIDERS__OPENAI__API_KEY and set "
+                "PROVIDERS__OPENAI__ENABLED=true."
+            )
 
         # Apply defaults from settings
         quality = quality or self.settings.images.default_quality
