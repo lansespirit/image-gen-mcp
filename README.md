@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/lansespirit-image-gen-mcp-badge.png)](https://mseep.ai/app/lansespirit-image-gen-mcp)
+
 # Image Gen MCP Server
 
 **Empowering Universal Image Generation for AI Chatbots**
