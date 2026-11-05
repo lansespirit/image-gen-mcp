@@ -165,3 +165,49 @@ class TestHealthCheck:
 
         assert result["status"] == "unhealthy"
         assert result["services"]["providers"] == "unhealthy"
+
+
+class TestServerLifespan:
+    """Startup wiring for generation and editing."""
+
+    async def test_lifespan_passes_openai_client_only_to_editing(
+        self, mock_settings
+    ):
+        """Editing receives a lazy OpenAI client. Generation keeps its own provider."""
+        import image_gen_mcp.server as server_mod
+        from image_gen_mcp.utils.openai_client import OpenAIClientManager
+
+        mock_settings.providers.openai = mock_settings.openai
+        generation_tool = MagicMock()
+        generation_tool.provider_registry.get_all_providers.return_value = []
+        generation_tool._pending_providers = []
+        storage = MagicMock()
+        storage.initialize = AsyncMock()
+        storage.close = AsyncMock()
+        storage.start_cleanup_task = AsyncMock()
+        cache = MagicMock()
+        cache.initialize = AsyncMock()
+        cache.close = AsyncMock()
+
+        with (
+            patch.object(server_mod, "settings", mock_settings),
+            patch.object(
+                server_mod, "ImageGenerationTool", return_value=generation_tool
+            ) as generation_cls,
+            patch.object(server_mod, "ImageStorageManager", return_value=storage),
+            patch.object(server_mod, "CacheManager", return_value=cache),
+            patch.object(server_mod, "ImageResourceManager"),
+        ):
+            async with server_mod.server_lifespan(MagicMock()) as context:
+                editing_tool = context.image_editing_tool
+
+        generation_cls.assert_called_once_with(
+            storage_manager=storage,
+            cache_manager=cache,
+            settings=mock_settings,
+        )
+        assert editing_tool.openai_client is not None
+        assert isinstance(editing_tool.openai_client, OpenAIClientManager)
+        assert editing_tool.openai_client.settings is mock_settings.providers.openai
+        assert editing_tool.openai_client._client is None
+        assert context.image_generation_tool is generation_tool
