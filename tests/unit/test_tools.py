@@ -454,6 +454,54 @@ class TestImageEditingTool:
         mock_editing_tool.openai_client.edit_image.assert_called_once()
 
     @pytest.mark.asyncio
+    async def test_edit_uses_injected_client(
+        self, storage_manager, cache_manager, mock_settings, sample_image_data
+    ):
+        """Edit calls the OpenAI client passed into the constructor."""
+        mock_settings.providers.openai = mock_settings.openai
+        client = MagicMock()
+        client.edit_image = AsyncMock()
+        client.estimate_cost = MagicMock(return_value={"estimated_cost_usd": 0.01})
+        tool = ImageEditingTool(
+            storage_manager=storage_manager,
+            cache_manager=cache_manager,
+            settings=mock_settings,
+            openai_client=client,
+        )
+        tool.cache_manager.get_image_edit = AsyncMock(return_value=None)
+        tool.cache_manager.set_image_edit = AsyncMock()
+        tool.storage_manager.save_image = AsyncMock(
+            return_value=("test_id", "/path/to/image")
+        )
+        tool._build_image_url = MagicMock(
+            return_value="http://localhost:3001/images/test_id.png"
+        )
+
+        tiny_png = (
+            "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+        )
+        response = MagicMock()
+        response.data = [MagicMock(b64_json=tiny_png.split(",", 1)[1])]
+        response.usage = None
+        response.created = 1234567890
+        client.edit_image.return_value = response
+
+        result = await tool.edit(
+            image_data=tiny_png,
+            prompt="change the red pixel to yellow",
+        )
+
+        assert result["operation"] == "edit"
+        client.edit_image.assert_awaited_once()
+        sent_image = client.edit_image.await_args.kwargs["image_data"]
+        assert sent_image == tiny_png.split(",", 1)[1]
+        assert (
+            client.edit_image.await_args.kwargs["prompt"]
+            == "change the red pixel to yellow"
+        )
+
+    @pytest.mark.asyncio
     async def test_edit_image_with_mask(self, mock_editing_tool, sample_image_data):
         """Test image editing with a mask."""
         # Configure all mocks with proper values

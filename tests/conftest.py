@@ -14,6 +14,7 @@ from image_gen_mcp.config.settings import (
     CacheSettings,
     GeminiSettings,
     ImageSettings,
+    ProvidersSettings,
     Settings,
     StorageSettings,
 )
@@ -103,6 +104,10 @@ def mock_settings(
             log_level="INFO",
             port=3001,
             rate_limit_rpm=10,
+        ),
+        providers=ProvidersSettings(
+            openai=mock_openai_settings,
+            gemini=mock_gemini_settings,
         ),
         openai=mock_openai_settings,
         gemini=mock_gemini_settings,

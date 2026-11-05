@@ -27,6 +27,7 @@ from .storage.manager import ImageStorageManager
 from .tools.image_editing import ImageEditingTool
 from .tools.image_generation import ImageGenerationTool
 from .utils.cache import CacheManager
+from .utils.openai_client import OpenAIClientManager
 from .utils.path_utils import find_existing_image_path
 from .utils.validators import (
     sanitize_prompt,
@@ -194,17 +195,22 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[ServerContext]:
     storage_manager = ImageStorageManager(settings.storage)
     cache_manager = CacheManager(settings.cache)
 
-    # Initialize tools and resources
+    # Initialize tools and resources.
+    # Generation builds its own OpenAIProvider. Editing calls
+    # OpenAIClientManager.edit_image, so the client has to be passed in.
+    # Construction is lazy and does not open a connection.
     image_generation_tool = ImageGenerationTool(
         storage_manager=storage_manager,
         cache_manager=cache_manager,
         settings=settings,
     )
 
+    openai_client = OpenAIClientManager(settings.providers.openai)
     image_editing_tool = ImageEditingTool(
         storage_manager=storage_manager,
         cache_manager=cache_manager,
         settings=settings,
+        openai_client=openai_client,
     )
 
     resource_manager = ImageResourceManager(
